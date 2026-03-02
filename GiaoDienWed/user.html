@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Khách Thuê - HTT Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        body { background-color: #f8fafc; color: #334155; line-height: 1.5; }
+
+        /* MÀN HÌNH CHỜ */
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #3182ce; font-size: 18px; font-weight: bold; }
+        #app-content { display: none; } 
+
+        /* NAVBAR */
+        .navbar { background: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;}
+        .brand { font-size: 18px; font-weight: 800; color: #334155; display: flex; align-items: center; gap: 8px; text-transform: uppercase;}
+        .brand i { color: #ef4444; font-size: 20px;}
+        .nav-right { display: flex; gap: 15px; align-items: center; }
+        .btn-outline { border: 1px solid #e2e8f0; background: white; padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s;}
+        .btn-outline:hover { background: #f1f5f9; }
+
+        .container { max-width: 1100px; margin: 40px auto; padding: 0 20px 80px 20px; animation: fadeIn 0.4s ease; min-height: 75vh; position: relative;}
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: translateY(0);} }
+
+        /* HEADER CHÀO HỎI */
+        .header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .welcome-text { font-size: 28px; font-weight: 800; color: #3b82f6; display: flex; align-items: center; gap: 10px;}
+        .btn-group { display: flex; gap: 12px; }
+        .btn-report { background: #ef4444; color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: 600; cursor: pointer; font-size: 13px; display: flex; gap: 8px; align-items: center; transition: 0.2s;}
+        .btn-report:hover { background: #dc2626; }
+        .btn-logout { background: #64748b; color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: 600; cursor: pointer; font-size: 13px; display: flex; gap: 8px; align-items: center; transition: 0.2s;}
+        .btn-logout:hover { background: #475569; }
+
+        .info-banner { background: #f1f5f9; padding: 12px 20px; border-left: 3px solid #cbd5e0; border-radius: 6px; color: #64748b; font-size: 13px; margin-bottom: 30px; }
+
+        /* GRID THÔNG TIN PHÒNG VÀ LỊCH SỬ */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 40px; }
+        .info-card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .info-card.blue { border-top: 4px solid #3b82f6; }
+        .info-card.green { border-top: 4px solid #10b981; }
+        .card-title { font-size: 16px; font-weight: 700; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+        .info-card.blue .card-title { color: #3b82f6; }
+        .info-card.green .card-title { color: #10b981; } 
+        
+        .info-line { display: flex; margin-bottom: 12px; font-size: 14px; color: #475569; align-items: flex-start;}
+        .info-line span { width: 115px; color: #64748b; font-weight: 600; flex-shrink: 0;}
+        .info-line strong { color: #0f172a; flex-grow: 1;}
+        .val-red { color: #ef4444 !important; font-weight: 700 !important; }
+        .val-green { color: #10b981 !important; font-weight: 700 !important; }
+
+        .history-list { font-size: 13px; color: #94a3b8; font-style: italic; max-height: 150px; overflow-y: auto;}
+        .history-item { font-style: normal; display: flex; justify-content: space-between; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px dashed #e2e8f0; color: #475569; font-size: 14px;}
+        .history-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .badge-stt { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .badge-stt.done { background: #dcfce3; color: #10b981; }
+        .badge-stt.wait { background: #fef3c7; color: #d97706; }
+
+        /* LỊCH SỬ HÓA ĐƠN VÀ CHỌN THÁNG */
+        .bill-header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fecaca; padding-bottom: 10px; margin-bottom: 25px; }
+        .section-title { font-size: 18px; font-weight: 700; color: #ef4444; display: flex; align-items: center; gap: 8px;}
+        
+        .bill-filter { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #475569; font-weight: 600;}
+        .bill-filter select { padding: 8px 15px; border-radius: 6px; border: 1px solid #cbd5e0; font-family: inherit; font-size: 14px; outline: none; font-weight: 600; color: #1e293b; background-color: white; cursor: pointer;}
+        .bill-filter select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+        .bill-box { display: flex; background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 6px solid #ef4444; margin-bottom: 20px; border-right: 1px solid #f1f5f9; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; gap: 40px; align-items: flex-start; animation: fadeIn 0.3s ease;}
+        
+        .bill-left { width: 35%; border-right: 1px dashed #e2e8f0; padding-right: 20px; }
+        .total-label { color: #64748b; font-size: 13px; margin-bottom: 5px;}
+        .total-amount { font-size: 32px; font-weight: 800; color: #ef4444; margin-bottom: 15px; }
+        .status-text { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 20px;}
+        .status-text.unpaid { color: #f59e0b; }
+        .status-text.paid { color: #10b981; }
+
+        .btn-pay-green { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; width: 100%; justify-content: center;}
+        .btn-pay-green:hover { background: #059669; }
+
+        .bill-right { width: 65%; }
+        .room-fee-row { display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 20px;}
+        .room-fee-row strong { color: #1e293b; font-weight: 700; font-size: 14px;}
+
+        .usage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .usage-box { background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; padding: 15px; }
+        .usage-box h4 { font-size: 12px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; color: #1e293b;}
+        .usage-box.elec h4 i { color: #f59e0b; }
+        .usage-box.water h4 i { color: #3b82f6; }
+        .usage-row { display: flex; justify-content: space-between; align-items: flex-end;}
+        .usage-calc { font-size: 11px; color: #94a3b8; line-height: 1.6;}
+        .usage-calc strong { color: #475569; font-size: 12px; }
+        .usage-price { font-size: 15px; font-weight: 700; }
+        .usage-box.elec .usage-price { color: #f59e0b; }
+        .usage-box.water .usage-price { color: #3b82f6; }
+
+        /* FOOTER CỐ ĐỊNH NHƯ BAR ỨNG DỤNG */
+        .footer { 
+            position: fixed; 
+            bottom: 0; left: 0; width: 100%;
+            background-color: #f8fafc; 
+            display: flex; align-items: center; justify-content: center; 
+            padding: 15px 20px; 
+            border-top: 1px solid #e2e8f0; 
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.02); 
+            color: #94a3b8; font-size: 13px; z-index: 1000; 
+        }
+        .footer-copyright { position: absolute; left: 40px; font-weight: 500; }
+        .footer-links { display: flex; gap: 25px; align-items: center; }
+        .footer-links span { display: flex; align-items: center; gap: 6px; }
+        .footer-links i { color: #cbd5e0; }
+        
+        @media (max-width: 850px) {
+            .footer { flex-direction: column; gap: 10px; padding: 10px; }
+            .footer-copyright { position: static; }
+            .container { padding-bottom: 110px; } 
+        }
+
+        /* MODALS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(2px);}
+        .modal-box { background: white; border-radius: 12px; padding: 30px; width: 450px; position: relative; animation: fadeIn 0.3s ease;}
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; color: #a0aec0; background: none; border: none; cursor: pointer; }
+        .close-btn:hover { color: #ef4444; }
+        
+        .modal-box h3 { color: #1e293b; margin-bottom: 5px; font-size: 20px; font-weight: 800;}
+        .modal-box p.desc { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+        .modal-box textarea { width: 100%; padding: 15px; border: 1px solid #cbd5e0; border-radius: 8px; height: 120px; resize: none; margin-bottom: 20px; font-size: 14px; outline: none; font-family: inherit;}
+        .modal-box textarea:focus { border-color: #ef4444; }
+        .modal-box .btn-submit { width: 100%; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;}
+        
+        .qr-container { text-align: center; }
+        .qr-container img { width: 220px; height: 220px; border-radius: 10px; margin: 15px 0; border: 1px solid #e2e8f0; padding: 10px; background: white;}
+        .qr-info { text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.8; border: 1px dashed #cbd5e0;}
+        .empty-state { text-align: center; padding: 40px; color: #94a3b8; background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+
+
+        /* ========================================================================= */
+        /* CHẾ ĐỘ DARK MODE ĐÍCH THỰC (Đã bổ sung logic CSS)                         */
+        /* ========================================================================= */
+        body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
+        
+        body.dark-mode .navbar, 
+        body.dark-mode .footer, 
+        body.dark-mode .info-card, 
+        body.dark-mode .bill-box,
+        body.dark-mode .modal-box,
+        body.dark-mode .empty-state,
+        body.dark-mode #loading-screen { background-color: #1e293b; border-color: #334155; color: #f1f5f9; box-shadow: none;}
+
+        body.dark-mode .brand { color: #f1f5f9; }
+        body.dark-mode .btn-outline { background-color: #0f172a; color: #cbd5e0; border-color: #334155; }
+        body.dark-mode .btn-outline:hover { background-color: #334155; }
+        
+        body.dark-mode .info-banner { background-color: #334155; color: #cbd5e0; border-left-color: #475569; }
+        
+        body.dark-mode .info-line span, 
+        body.dark-mode .total-label, 
+        body.dark-mode .room-fee-row, 
+        body.dark-mode .bill-filter,
+        body.dark-mode .history-item { color: #94a3b8; border-color: #334155; }
+        
+        body.dark-mode .info-line strong, 
+        body.dark-mode .room-fee-row strong, 
+        body.dark-mode .usage-box h4 { color: #f8fafc; }
+        
+        body.dark-mode .usage-box, 
+        body.dark-mode .qr-info,
+        body.dark-mode textarea { background-color: #0f172a; border-color: #334155; color: #f1f5f9; }
+        
+        body.dark-mode .bill-left { border-color: #334155; }
+        body.dark-mode .bill-filter select { background-color: #0f172a; color: #f1f5f9; border-color: #334155; }
+        body.dark-mode .modal-box h3 { color: #f1f5f9; }
+        body.dark-mode .modal-box p.desc { color: #94a3b8; }
+        body.dark-mode .footer-links strong { color: #f1f5f9 !important; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <i class="fas fa-spinner fa-spin" style="font-size: 40px; margin-bottom: 15px;"></i>
+        <div>Đang tải dữ liệu phòng...</div>
+    </div>
+
+    <div id="app-content">
+        <nav class="navbar">
+            <div class="brand"><i class="fas fa-home"></i> HTT MANAGER</div>
+            <div class="nav-right">
+                <button class="btn-outline" id="btn-toggle-dark" onclick="toggleDarkMode()">
+                    <i class="fas fa-moon"></i> Dark Mode
+                </button>
+                <div class="btn-outline"><i class="fas fa-clock"></i> <span id="real-clock">00:00:00</span></div>
+            </div>
+        </nav>
+
+        <div class="container">
+            
+            <div class="header-action">
+                <div class="welcome-text">👋 Xin chào, Phòng <span id="txt-room-number">...</span>!</div>
+                <div class="btn-group">
+                    <button class="btn-report" onclick="document.getElementById('modal-hotro').style.display='flex'"><i class="fas fa-tools"></i> Yêu cầu hỗ trợ</button>
+                    <button class="btn-logout" onclick="dangXuat()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
+                </div>
+            </div>
+
+            <div class="info-banner">
+                Đây là trang thông tin dành riêng cho bạn. Cần hỗ trợ sửa chữa điện, nước... vui lòng bấm nút <strong>"Yêu cầu hỗ trợ"</strong> phía trên.
+            </div>
+
+            <div class="grid-2">
+                <div class="info-card blue">
+                    <div class="card-title"><i class="fas fa-home"></i> Thông Tin Phòng</div>
+                    <div class="info-line"><span>Số phòng:</span> <strong id="info-sophong" class="val-red">...</strong></div>
+                    <div class="info-line"><span>Giá phòng:</span> <strong id="info-giaphong">...</strong></div>
+                    <div class="info-line"><span>Đại diện thuê:</span> <strong id="info-nguoithue">Đang tải...</strong></div>
+                    <div class="info-line"><span>Tiền cọc:</span> <strong id="info-tiencoc">...</strong></div>
+                    <div class="info-line"><span>Người ở ghép:</span> <strong id="info-oghep">...</strong></div>
+                    <div class="info-line"><span>Trạng thái:</span> <strong class="val-green">Đã thuê</strong></div>
+                </div>
+
+                <div class="info-card green">
+                    <div class="card-title"><i class="fas fa-clipboard-list"></i> Lịch Sử Hỗ Trợ Gần Đây</div>
+                    <div class="history-list" id="khu-vuc-lich-su">
+                        Bạn chưa gửi yêu cầu hỗ trợ nào.
+                    </div>
+                </div>
+            </div>
+
+            <div class="bill-header-container">
+                <div class="section-title" style="margin-bottom:0;"><i class="fas fa-money-bill-wave"></i> Bảng Kê Tiền Phòng</div>
+                
+                <div class="bill-filter" id="box-chon-thang" style="display: none;">
+                    <label>Xem tháng:</label>
+                    <select id="thang-hoa-don" onchange="renderHoaDonTheoThang()"></select>
+                </div>
+            </div>
+
+            <div id="khu-vuc-hoadon">
+                </div>
+
+        </div>
+
+        <div class="footer">
+            <div class="footer-copyright">© 2026 Bá Trừ. All rights reserved.</div>
+            <div class="footer-links">
+                <span><i class="fas fa-user-tie"></i> <strong style="font-weight: 600;">Bá Trừ</strong> | IT Developer</span>
+                <span><i class="fas fa-envelope"></i> batru.dev@gmail.com</span>
+                <span><i class="fas fa-mobile-alt"></i> 035****735</span>
+                <span><i class="fas fa-laptop"></i> github.com/batru</span>
+            </div>
+        </div>
+    </div> 
+
+    <div class="modal-overlay" id="modal-hotro">
+        <div class="modal-box">
+            <button class="close-btn" onclick="document.getElementById('modal-hotro').style.display='none'"><i class="fas fa-times"></i></button>
+            <h3>Gửi Yêu Cầu Sửa Chữa</h3>
+            <p class="desc">Quản lý sẽ nhận được thông báo ngay lập tức.</p>
+            <textarea id="txt-yeu-cau" placeholder="Mô tả sự cố (Ví dụ: Ống nước bồn rửa mặt bị rò rỉ, bóng đèn hành lang cháy...)"></textarea>
+            <button class="btn-submit" onclick="guiYeuCauHoTro()">Gửi Đi</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-qr">
+        <div class="modal-box qr-container">
+            <button class="close-btn" onclick="document.getElementById('modal-qr').style.display='none'"><i class="fas fa-times"></i></button>
+            <h3 style="color: #3182ce; margin-bottom:0;"><i class="fas fa-qrcode"></i> Quét Mã Thanh Toán</h3>
+            <p style="color: #64748b; font-size:13px; margin-bottom: 10px;">Mở App Ngân Hàng để quét mã</p>
+            <img id="img-qr-code" src="" alt="Mã QR">
+            <div class="qr-info">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 5px;"><span>Tổng tiền:</span> <strong style="color: #ef4444; font-size:18px;" id="qr-tong-tien">0 đ</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 5px;"><span style="color:#64748b">Ngân hàng:</span> <strong id="qr-ngan-hang">---</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 5px;"><span style="color:#64748b">Chủ TK:</span> <strong id="qr-chu-tk">---</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span style="color:#64748b">Số TK:</span> <strong id="qr-so-tk" style="color:#3182ce; font-size:15px;">---</strong></div>
+            </div>
+            <p style="font-size: 12px; color: #ef4444; margin-top: 15px; font-weight: 600;"><i class="fas fa-info-circle"></i> Vui lòng giữ nguyên nội dung chuyển khoản tự động.</p>
+        </div>
+    </div>
+
+    <script>
+        const API_PHONG = "http://localhost:5062/api/phong"; 
+        const API_HOADON = "http://localhost:5062/api/hoadon"; 
+        const API_YEUCAU = "http://localhost:5062/api/yeucau";
+        const API_CAIDAT = "http://localhost:5062/api/caidat";
+        const API_NGUOITHUE = "http://localhost:5062/api/nguoithue"; 
+        const API_KHACHOGHEP = "http://localhost:5062/api/khachoghep"; 
+
+        let phongHienTai = null;
+        let caiDatHeThong = null;
+        let tatCaHoaDonCuaToi = []; 
+
+        function formatTien(tien) { return new Intl.NumberFormat('vi-VN').format(tien) + " đ"; }
+
+        // ==========================================
+        // LOGIC DARK MODE
+        // ==========================================
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            
+            const isDark = body.classList.contains('dark-mode');
+            localStorage.setItem('theme_htt', isDark ? 'dark' : 'light'); // Lưu vào bộ nhớ trình duyệt
+            
+            updateDarkModeButton(isDark);
+        }
+
+        function updateDarkModeButton(isDark) {
+            const btn = document.getElementById('btn-toggle-dark');
+            if(isDark) {
+                btn.innerHTML = '<i class="fas fa-sun" style="color: #fbbf24;"></i> Light Mode';
+            } else {
+                btn.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+            }
+        }
+
+        // Tự động kiểm tra Dark Mode khi mở trang
+        function checkSavedTheme() {
+            const savedTheme = localStorage.getItem('theme_htt');
+            if(savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                updateDarkModeButton(true);
+            }
+        }
+        // Gọi hàm kiểm tra ngay
+        checkSavedTheme();
+
+
+        setInterval(() => {
+            document.getElementById('real-clock').innerText = new Date().toLocaleTimeString('vi-VN');
+        }, 1000);
+
+        window.onload = async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tenPhongTuURL = urlParams.get('room');
+
+            if(!tenPhongTuURL) {
+                alert("Vui lòng đăng nhập ở trang login.html trước!");
+                window.location.href = "login.html";
+                return;
+            }
+
+            try {
+                const resP = await fetch(API_PHONG); 
+                const dsPhong = await resP.json();
+                
+                phongHienTai = dsPhong.find(p => p.soPhong.toUpperCase() === tenPhongTuURL.toUpperCase());
+                
+                if(!phongHienTai) {
+                    alert("Lỗi: Phòng không tồn tại trong CSDL!");
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                const resCD = await fetch(API_CAIDAT);
+                if(resCD.ok) caiDatHeThong = await resCD.json();
+
+                document.getElementById('loading-screen').style.display = "none";
+                document.getElementById('app-content').style.display = "block";
+                
+                renderGiaoDienDashboard();
+
+            } catch(e) {
+                document.getElementById('loading-screen').innerHTML = `<i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 50px; margin-bottom: 15px;"></i><div style="color: #ef4444;">LỖI: KHÔNG KẾT NỐI ĐƯỢC MÁY CHỦ C#</div><p style="font-size:14px; font-weight:normal; margin-top:10px; color:#475569;">Vui lòng kiểm tra lại Backend (chạy dotnet run) rồi F5 lại trang.</p>`;
+            }
+        }
+
+        async function renderGiaoDienDashboard() {
+            let tenP = phongHienTai.soPhong.toUpperCase().startsWith("P.") ? phongHienTai.soPhong : "P." + phongHienTai.soPhong;
+            document.getElementById('txt-room-number').innerText = tenP;
+            document.getElementById('info-sophong').innerText = tenP;
+            document.getElementById('info-giaphong').innerText = formatTien(phongHienTai.giaThue);
+
+            try {
+                const resNT = await fetch(API_NGUOITHUE);
+                if(resNT.ok) {
+                    const dsNguoiThue = await resNT.json();
+                    const khachHienTai = dsNguoiThue.find(nt => nt.maPhong === phongHienTai.maPhong);
+                    
+                    if(khachHienTai) {
+                        document.getElementById('info-nguoithue').innerText = khachHienTai.hoTen;
+                        document.getElementById('info-tiencoc').innerText = formatTien(khachHienTai.tienCoc || 0);
+
+                        try {
+                            const resKG = await fetch(API_KHACHOGHEP);
+                            if(resKG.ok) {
+                                const dsKhachGhep = await resKG.json();
+                                const nguoiGhepCuaPhong = dsKhachGhep.filter(kg => kg.maNguoiThue === khachHienTai.maNguoiThue || kg.maPhong === phongHienTai.maPhong);
+                                
+                                if(nguoiGhepCuaPhong.length > 0) {
+                                    document.getElementById('info-oghep').innerText = nguoiGhepCuaPhong.map(kg => kg.hoTen).join(", ");
+                                } else {
+                                    document.getElementById('info-oghep').innerText = "Không có";
+                                }
+                            } else { document.getElementById('info-oghep').innerText = "Không có"; }
+                        } catch(e) { document.getElementById('info-oghep').innerText = "Không có"; }
+                    } else {
+                        document.getElementById('info-nguoithue').innerText = "Chưa cập nhật";
+                        document.getElementById('info-tiencoc').innerText = "0 đ";
+                        document.getElementById('info-oghep').innerText = "Không có";
+                    }
+                }
+            } catch(e) {
+                document.getElementById('info-nguoithue').innerText = "Lỗi kết nối";
+                document.getElementById('info-tiencoc').innerText = "Lỗi kết nối";
+                document.getElementById('info-oghep').innerText = "Lỗi kết nối";
+            }
+
+            const resYC = await fetch(API_YEUCAU);
+            if(resYC.ok) {
+                const dsTatCaYeuCau = await resYC.json();
+                const lsKhuVuc = document.getElementById('khu-vuc-lich-su');
+                const yeuCauCuaPhong = dsTatCaYeuCau.filter(yc => yc.maPhong === phongHienTai.maPhong);
+                
+                if(yeuCauCuaPhong.length > 0) {
+                    lsKhuVuc.innerHTML = "";
+                    yeuCauCuaPhong.forEach(yc => {
+                        let d = new Date(yc.ngayGui).toLocaleDateString('vi-VN');
+                        let b = yc.trangThai === "Đã xong" ? "done" : "wait";
+                        lsKhuVuc.innerHTML += `<div class="history-item"><span class="date">${d}</span><span class="content">${yc.noiDung}</span><span class="badge-stt ${b}">${yc.trangThai}</span></div>`;
+                    });
+                }
+            }
+
+            const resHD = await fetch(API_HOADON);
+            const tatCaHoaDon = await resHD.json();
+            tatCaHoaDonCuaToi = tatCaHoaDon.filter(hd => hd.maPhong === phongHienTai.maPhong);
+            
+            const khuVucBill = document.getElementById('khu-vuc-hoadon');
+            const hopChonThang = document.getElementById('box-chon-thang');
+            const selectThang = document.getElementById('thang-hoa-don');
+
+            if(tatCaHoaDonCuaToi.length === 0) {
+                khuVucBill.innerHTML = `<div class="empty-state"><i class="fas fa-check-circle" style="font-size: 50px; color: #10b981; margin-bottom: 15px;"></i><br><strong style="font-size:18px; color: #10b981;">Tuyệt vời!</strong><br>Bạn chưa có hóa đơn nào.</div>`;
+                hopChonThang.style.display = 'none';
+                return;
+            }
+
+            tatCaHoaDonCuaToi.sort((a, b) => {
+                let [mA, yA] = a.thangNam.split('/');
+                let [mB, yB] = b.thangNam.split('/');
+                return new Date(yB, mB - 1) - new Date(yA, mA - 1);
+            });
+
+            hopChonThang.style.display = 'flex';
+            selectThang.innerHTML = "";
+            tatCaHoaDonCuaToi.forEach(hd => {
+                let option = document.createElement('option');
+                option.value = hd.maHoaDon;
+                let textTrangThai = hd.trangThai === "Đã đóng" ? " - Đã TT" : " - CHƯA ĐÓNG";
+                option.text = `Tháng ${hd.thangNam} ${textTrangThai}`;
+                selectThang.appendChild(option);
+            });
+
+            renderHoaDonChiTiet(tatCaHoaDonCuaToi[0].maHoaDon);
+        }
+
+        function renderHoaDonTheoThang() {
+            const maHD = parseInt(document.getElementById('thang-hoa-don').value);
+            renderHoaDonChiTiet(maHD);
+        }
+
+        function renderHoaDonChiTiet(maHD) {
+            const hd = tatCaHoaDonCuaToi.find(h => h.maHoaDon === maHD);
+            const khuVucBill = document.getElementById('khu-vuc-hoadon');
+
+            let soDien = hd.soDienMoi - hd.soDienCu;
+            let soNuoc = hd.soNuocMoi - hd.soNuocCu;
+            let tienDien = soDien * hd.donGiaDien;
+            let tienNuoc = soNuoc * hd.donGiaNuoc;
+
+            let giaPhongGoc = hd.giaThue > 0 ? hd.giaThue : phongHienTai.giaThue;
+            let tongTien = giaPhongGoc + tienDien + tienNuoc;
+            
+            let isPaid = hd.trangThai === "Đã đóng";
+            let statusClass = isPaid ? "paid" : "unpaid";
+            let iconStatus = isPaid ? "fa-check" : "fa-hourglass-half";
+            let nutThanhToan = isPaid ? '' : `<button class="btn-pay-green" onclick="moModalQR(${tongTien}, '${hd.thangNam}')"><i class="fas fa-credit-card"></i> Thanh Toán (Quét QR)</button>`;
+
+            khuVucBill.innerHTML = `
+                <div class="bill-box">
+                    <div class="bill-left">
+                        <div class="total-label">Tổng thanh toán tháng:</div>
+                        <div class="total-amount">${formatTien(tongTien)}</div>
+                        <div class="status-text ${statusClass}"><i class="fas ${iconStatus}"></i> ${hd.trangThai}</div>
+                        ${nutThanhToan}
+                    </div>
+                    
+                    <div class="bill-right">
+                        <div class="room-fee-row">
+                            <span>Tiền phòng gốc:</span>
+                            <strong>${formatTien(giaPhongGoc)}</strong>
+                        </div>
+                        <div class="usage-grid">
+                            <div class="usage-box elec">
+                                <h4><i class="fas fa-bolt"></i> Chi Tiết Điện (${hd.donGiaDien / 1000}k/số)</h4>
+                                <div class="usage-row">
+                                    <div class="usage-calc">Usage: <strong>${soDien} số</strong><br>Mới: ${hd.soDienMoi} - Cũ: ${hd.soDienCu}</div>
+                                    <div class="usage-price">${formatTien(tienDien)}</div>
+                                </div>
+                            </div>
+                            <div class="usage-box water">
+                                <h4><i class="fas fa-tint"></i> Chi Tiết Nước (${hd.donGiaNuoc / 1000}k/khối)</h4>
+                                <div class="usage-row">
+                                    <div class="usage-calc">Usage: <strong>${soNuoc} khối</strong><br>Mới: ${hd.soNuocMoi} - Cũ: ${hd.soNuocCu}</div>
+                                    <div class="usage-price">${formatTien(tienNuoc)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function moModalQR(tongTien, thangNam) {
+            if(!caiDatHeThong || !caiDatHeThong.nganHang || !caiDatHeThong.soTaiKhoan) {
+                return alert("Chủ trọ chưa cài đặt thông tin Ngân hàng trên hệ thống. Vui lòng liên hệ trực tiếp!");
+            }
+
+            let tenP = phongHienTai.soPhong.toUpperCase().replace("P.", "");
+            let noiDungCK = `Thanh toan tien phong P${tenP} thang ${thangNam}`.replace(/\//g, '');
+            let bankCode = caiDatHeThong.nganHang.trim();
+            let accountNo = caiDatHeThong.soTaiKhoan.trim();
+            let accountName = caiDatHeThong.tenChuTaiKhoan.trim();
+
+            let qrUrl = `https://img.vietqr.io/image/${bankCode}-${accountNo}-compact2.png?amount=${tongTien}&addInfo=${noiDungCK}&accountName=${accountName}`;
+
+            document.getElementById('img-qr-code').src = qrUrl;
+            document.getElementById('qr-tong-tien').innerText = formatTien(tongTien);
+            document.getElementById('qr-chu-tk').innerText = accountName;
+            document.getElementById('qr-so-tk').innerText = accountNo;
+            document.getElementById('qr-ngan-hang').innerText = bankCode;
+
+            document.getElementById('modal-qr').style.display = 'flex';
+        }
+
+        async function guiYeuCauHoTro() {
+            const noiDung = document.getElementById('txt-yeu-cau').value.trim();
+            if(!noiDung) return alert("Vui lòng mô tả sự cố!");
+
+            const data = { maPhong: phongHienTai.maPhong, noiDung: noiDung };
+
+            try {
+                await fetch(API_YEUCAU, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                alert("✅ Đã gửi báo cáo cho quản lý thành công!");
+                document.getElementById('txt-yeu-cau').value = ""; 
+                document.getElementById('modal-hotro').style.display = 'none';
+                renderGiaoDienDashboard(); 
+            } catch (e) {
+                alert("Lỗi kết nối mạng! Vui lòng thử lại sau.");
+            }
+        }
+
+        function dangXuat() {
+            if(confirm("Bạn muốn đăng xuất khỏi hệ thống?")) {
+                window.location.href = "login.html";
+            }
+        }
+    </script>
+</body>
+</html>
