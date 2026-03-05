@@ -46,7 +46,6 @@ D:\Quản Lý Phòng Trọ\QuanLyNhaTroAPI\obj\Debug\net10.0\QuanLyNhaTroAPI.Ass
 D:\Quản Lý Phòng Trọ\QuanLyNhaTroAPI\obj\Debug\net10.0\QuanLyNhaTroAPI.csproj.CoreCompileInputs.cache
 D:\Quản Lý Phòng Trọ\QuanLyNhaTroAPI\obj\Debug\net10.0\QuanLyNhaTroAPI.MvcApplicationPartsAssemblyInfo.cs
 D:\Quản Lý Phòng Trọ\QuanLyNhaTroAPI\obj\Debug\net10.0\QuanLyNhaTroAPI.MvcApplicationPartsAssemblyInfo.cache
-D:\Quản Lý Phòng Trọ\QuanLyNhaTroAPI\obj\Debug\net10.0\QuanLyNhaTroAPI.sourcelink.json
 D:\Quản Lý Phòng Trọ\QuanLyNhaTroAPI\obj\Debug\net10.0\rjimswa.dswa.cache.json
 D:\Quản Lý Phòng Trọ\QuanLyNhaTroAPI\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 D:\Quản Lý Phòng Trọ\QuanLyNhaTroAPI\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json

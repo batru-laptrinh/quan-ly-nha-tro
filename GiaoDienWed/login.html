@@ -136,7 +136,7 @@
             const phong = document.getElementById('rs-phong').value.trim(), sdt = document.getElementById('rs-sdt').value.trim(), email = document.getElementById('rs-email').value.trim();
             if(!phong || !sdt || !email) return alert("⚠️ Vui lòng nhập đầy đủ thông tin!");
             try {
-                const res = await fetch("http://localhost:5062/api/quenmatkhau", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ TenPhong: phong, SoDienThoai: sdt, Email: email }) });
+                const res = await fetch("https://localhost:5062/api/quenmatkhau", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ TenPhong: phong, SoDienThoai: sdt, Email: email }) });
                 if(res.ok) { alert(`✅ Yêu cầu khôi phục mật khẩu đã gửi thành công!`); dongQuenMatKhau(); }
             } catch (error) { alert("❌ Lỗi kết nối C#!"); }
         }

@@ -3,130 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Nhà Trọ - HTT Manager</title>
+    <title>Bảng Điều Khiển - HTT Manager</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: #f4f7f6; color: #333; display: flex; height: 100vh; overflow: hidden; transition: background-color 0.3s, color 0.3s;}
+        body { background-color: #f4f7f6; color: #333; display: flex; height: 100vh; overflow: hidden; }
 
-        /* SIDEBAR */
-        .sidebar { width: 260px; background-color: #2c3e50; color: white; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 100; transition: 0.3s;}
+        /* SIDEBAR (MENU BÊN TRÁI) */
+        .sidebar { width: 260px; background-color: #2c3e50; color: white; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 100; }
         .sidebar-brand { padding: 25px 20px; font-size: 20px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #34495e; display: flex; align-items: center; gap: 12px; }
         .sidebar-brand i { color: #38a169; font-size: 24px; }
-        .sidebar-menu { flex: 1; padding-top: 15px; display: flex; flex-direction: column; gap: 2px; }
-        .menu-item { padding: 14px 25px; display: flex; align-items: center; gap: 15px; color: #a0aec0; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; border-left: 4px solid transparent; }
+        .sidebar-menu { flex: 1; padding-top: 20px; display: flex; flex-direction: column; gap: 5px; }
+        .menu-item { padding: 15px 25px; display: flex; align-items: center; gap: 15px; color: #a0aec0; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; border-left: 4px solid transparent; }
         .menu-item:hover { color: #fff; background-color: #34495e; }
-        .menu-item i { width: 20px; text-align: center; font-size: 16px; }
+        .menu-item i { width: 20px; text-align: center; font-size: 18px; }
         .menu-item.active { background-color: #34495e; color: #38a169; border-left-color: #38a169; font-weight: 600; }
         .logout-btn { margin-top: auto; border-top: 1px solid #34495e; color: #e53e3e; }
         .logout-btn:hover { background-color: #e53e3e; color: white; border-left-color: #e53e3e;}
 
-        /* MAIN CONTENT */
-        .main-wrapper { flex: 1; display: flex; flex-direction: column; background-color: #f4f7f6; transition: 0.3s;}
-        .top-header { background: white; padding: 18px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index: 10; transition: 0.3s;}
-        .top-header h2 { font-size: 20px; color: #2d3748; font-weight: 700; margin: 0; }
-        .admin-profile { display: flex; align-items: center; gap: 15px; font-weight: 600; color: #4a5568; cursor: pointer; }
-        .admin-profile i.fa-user-circle { font-size: 24px; color: #a0aec0; }
+        /* KHU VỰC NỘI DUNG CHÍNH (BÊN PHẢI) */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; background-color: #f4f7f6; }
+        .top-header { background: white; padding: 18px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index: 10; }
+        .top-header h2 { font-size: 22px; color: #2d3748; font-weight: 700; margin: 0; }
+        .admin-profile { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #4a5568; cursor: pointer; }
+        .admin-profile i { font-size: 24px; color: #a0aec0; }
         .content-container { flex: 1; overflow-y: auto; padding: 30px 40px; display: flex; flex-direction: column; }
         .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
         .tab-content.active { display: block; }
 
-        /* BẢNG & NÚT */
-        .area-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s;}
+        /* THỐNG KÊ */
+        .dashboard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); border-left: 4px solid #cbd5e0; display: flex; justify-content: space-between; align-items: center;}
+        .stat-card.blue { border-left-color: #3182ce; } .stat-card.green { border-left-color: #38a169; } .stat-card.orange { border-left-color: #dd6b20; }
+        .stat-info h4 { font-size: 14px; color: #718096; font-weight: 600; margin-bottom: 5px; text-transform: uppercase;}
+        .stat-info h1 { font-size: 32px; color: #2d3748; font-weight: 800; }
+        .stat-icon { font-size: 40px; opacity: 0.1; }
+
+        /* TOOLBAR TÌM KIẾM */
+        .area-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
         .toolbar { display: flex; gap: 15px; align-items: center; }
-        .search-box, .filter-box { padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; color: #4a5568; transition: 0.3s;}
+        .search-box { padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; width: 220px; color: #4a5568;}
         .search-box:focus { border-color: #3182ce; }
+        .filter-box { padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; color: #4a5568; background: white; cursor: pointer;}
         .btn-add-room { background-color: #38a169; padding: 10px 20px; border-radius: 8px; color: white; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; transition: 0.2s;}
-        .btn-action-top { background-color: #3182ce; }
-        .btn-action-top:hover { background-color: #2b6cb0; }
-        .btn-outline { border: 1px solid #e2e8f0; background: white; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #4a5568; transition: 0.2s;}
+        .btn-add-room:hover { background-color: #2f855a; }
+        .btn-action-top { background-color: #3182ce; } .btn-action-top:hover { background-color: #2b6cb0; }
         
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: 0.3s;}
-        th, td { padding: 16px 20px; border-bottom: 1px solid #edf2f7; font-size: 14px; color: #4a5568; vertical-align: middle; transition: 0.3s;}
-        th { background-color: #f8fafc; font-weight: 600; color: #718096; text-transform: uppercase; font-size: 12px;}
+        /* BẢNG DỮ LIỆU */
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        th, td { padding: 16px 20px; border-bottom: 1px solid #edf2f7; font-size: 14px; color: #4a5568; vertical-align: middle; }
+        th { background-color: #f8fafc; font-weight: 600; color: #718096; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        tr:hover { background-color: #fbfbfc; }
+        .text-center { text-align: center !important; } .text-right { text-align: right !important; } 
+        .col-price { font-weight: 600; color: #2d3748; } 
         
-        .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; text-align: center;}
+        .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; min-width: 90px; text-align: center;}
         .badge-status.empty { background-color: #f0fff4; color: #2f855a; border: 1px solid #c6f6d5;} 
         .badge-status.rented { background-color: #ebf8ff; color: #3182ce; border: 1px solid #bee3f8;} 
         .badge-status.pending { background-color: #fffaf0; color: #dd6b20; border: 1px solid #feebc8;} 
         .badge-status.success { background-color: #f0fff4; color: #38a169; border: 1px solid #c6f6d5;} 
-        .badge-status.danger { background-color: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7;}
-        
+
         .row-action-btn { background: none; border: 1px solid #e2e8f0; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; margin: 0 4px; font-weight: 600; transition: 0.2s; color: #4a5568;}
-        .btn-row-delete { color: #e53e3e; }
+        .row-action-btn:hover { background-color: #edf2f7; }
+        .btn-row-delete { color: #e53e3e; } .btn-row-delete:hover { background-color: #fff5f5; border-color: #fed7d7; } 
 
         /* MODALS CHUNG */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(3px);}
-        .modal-box { background: white; border-radius: 16px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-height: 95vh; display: flex; flex-direction: column; transition: 0.3s; width: 500px;}
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #a0aec0; transition: 0.2s;}
-        .close-btn:hover { color: #e53e3e; }
-        .modal-form-item { margin-bottom: 15px; flex: 1; }
-        .modal-form-item label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #4a5568;}
-        .modal-form-item input, .modal-form-item select { width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s;}
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-box { background: white; border-radius: 16px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-height: 95vh; display: flex; flex-direction: column;}
+        .modal-form-item { margin-bottom: 20px; flex: 1; }
+        .modal-form-item label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #4a5568;}
+        .modal-form-item input, .modal-form-item select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s;}
         .modal-form-item input:focus, .modal-form-item select:focus { border-color: #38a169; box-shadow: 0 0 0 3px rgba(56,161,105,0.1);}
         .modal-btn-area { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
         .flex-row { display: flex; gap: 15px; }
 
-        /* HÀNG NGƯỜI Ở GHÉP */
-        .dong-oghep { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; animation: fadeIn 0.2s ease-in-out;}
-        .dong-oghep input { flex: 1; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; transition: 0.2s;}
-        .dong-oghep input:focus { border-color: #38a169; box-shadow: 0 0 0 3px rgba(56,161,105,0.1);}
-        .dong-oghep .og-ten { flex: 2; } 
-        .btn-remove-oghep { background: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7; width: 38px; height: 38px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0;}
-        .btn-remove-oghep:hover { background: #e53e3e; color: white; }
-
-        /* HỒ SƠ PHÒNG (WIDE BOX) */
-        .wide-box { width: 850px !important; padding: 0 !important; overflow: hidden; }
-        .modal-header-wide { background: #2c3e50; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s;}
-        .modal-header-wide h3 { margin: 0; font-size: 20px; display: flex; align-items: center; gap: 10px;}
-        .modal-header-wide .close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; opacity: 0.8; transition: 0.2s; }
-        .profile-content { padding: 30px; background: #f4f7f6; overflow-y: auto; max-height: 80vh; transition: 0.3s; }
+        /* HỒ SƠ PHÒNG (CHI TIẾT) */
+        .modal-box.wide-box { width: 850px; padding: 0; overflow: hidden; }
+        .modal-box.wide-box .modal-header-wide { background: #2c3e50; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-box.wide-box .modal-header-wide h3 { margin: 0; font-size: 20px; display: flex; align-items: center; gap: 10px;}
+        .modal-box.wide-box .close-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; opacity: 0.7; }
+        .profile-content { padding: 25px 30px; background: #f4f7f6; overflow-y: auto; max-height: calc(90vh - 70px);}
         .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .profile-card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border-top: 4px solid #38a169; transition: 0.3s; }
+        .profile-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-top: 4px solid #38a169;}
         .profile-card.blue-top { border-top-color: #3182ce; }
-        .profile-card h4 { font-size: 16px; color: #2d3748; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; font-weight: 700;}
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; }
+        .profile-card h4 { font-size: 16px; color: #2d3748; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px;}
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
         .info-row span.lbl { color: #718096; } .info-row span.val { color: #2d3748; font-weight: 600; text-align: right;}
-        .calc-row { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; border: 1px solid #edf2f7; transition: 0.3s;}
-        .calc-row .math { color: #a0aec0; margin: 8px 0; font-size: 12px;}
-        .calc-row .money { color: #e53e3e; font-weight: 700; font-size: 16px; text-align: right; }
+        .calc-row { background: #f8fafc; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; }
+        .calc-row .math { color: #a0aec0; margin: 5px 0; }
+        .calc-row .money { color: #e53e3e; font-weight: 700; font-size: 15px; }
 
-        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .settings-card { background: white; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; transition: 0.3s; }
-        .dev-footer { margin-top: auto; padding: 40px 20px 20px 20px; display: flex; flex-direction: row; justify-content: center; gap: 25px; font-size: 14px; color: #a0aec0; }
-        
-        /* CSS CHO BẢNG NHẬP CHỈ SỐ ĐIỆN NƯỚC */
-        .row-dien-nuoc input { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; text-align: center; }
-        .row-dien-nuoc input:focus { border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49,130,206,0.1); }
+        .dong-oghep { display: flex; gap: 10px; margin-bottom: 12px; background: #f8fafc; padding: 12px; border-radius: 8px; align-items: center; border: 1px solid #edf2f7; }
+        .dong-oghep input { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; outline: none; }
+        .btn-remove-oghep { background: #fff5f5; border: 1px solid #fed7d7; color: #e53e3e; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
 
-        /* DARK MODE */
-        body.dark-mode { background-color: #1a202c; color: #e2e8f0; }
-        body.dark-mode .sidebar { background-color: #171923; border-right: 1px solid #2d3748; }
-        body.dark-mode .main-wrapper { background-color: #1a202c; }
-        body.dark-mode .top-header { background-color: #2d3748; border-bottom: 1px solid #4a5568; }
-        body.dark-mode .top-header h2, body.dark-mode .admin-profile { color: #f7fafc; }
-        body.dark-mode .btn-outline { background-color: #1a202c; border-color: #4a5568; color: #e2e8f0; }
-        body.dark-mode .area-header, body.dark-mode table, body.dark-mode .modal-box, body.dark-mode .settings-card { background-color: #2d3748; box-shadow: none; border: 1px solid #4a5568; }
-        body.dark-mode .modal-box h3, body.dark-mode .settings-card h3 { color: #f7fafc; }
-        body.dark-mode th { background-color: #1a202c; color: #a0aec0; border-bottom-color: #4a5568; }
-        body.dark-mode td { border-bottom-color: #4a5568; color: #e2e8f0; }
-        body.dark-mode tr:hover { background-color: #4a5568; }
-        body.dark-mode .search-box, body.dark-mode .filter-box, body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background-color: #1a202c; border-color: #4a5568; color: #f7fafc; }
-        body.dark-mode .row-action-btn { border-color: #4a5568; color: #e2e8f0; }
-        body.dark-mode .col-price { color: #fbd38d; }
-        body.dark-mode .modal-header-wide { background-color: #1a202c; border-bottom: 1px solid #4a5568; }
-        body.dark-mode .profile-content { background-color: #171923; }
-        body.dark-mode .profile-card { background-color: #2d3748; border-color: #4a5568; }
-        body.dark-mode .profile-card h4, body.dark-mode .info-row span.val { color: #f7fafc; }
-        body.dark-mode .calc-row { background-color: #1a202c; border-color: #4a5568; }
-        body.dark-mode .dong-oghep input { background-color: #1a202c; border-color: #4a5568; color: #f7fafc; }
-        body.dark-mode .btn-remove-oghep { background: rgba(229, 62, 62, 0.1); border-color: #e53e3e; }
-        body.dark-mode .btn-remove-oghep:hover { background: #e53e3e; color: white; }
-        body.dark-mode .row-dien-nuoc input { background-color: #1a202c; border-color: #4a5568; color: #f7fafc; }
+        /* CHỮ KÝ DEVELOPER */
+        .dev-footer { margin-top: auto; padding: 40px 20px 20px 20px; display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 25px; font-size: 14px; width: 100%; color: #a0aec0; }
+        .dev-line { display: flex; align-items: center; gap: 8px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -135,48 +115,48 @@
         <div class="sidebar-brand"><i class="fas fa-house-chimney"></i> HTT Manager</div>
         <div class="sidebar-menu">
             <div class="menu-item active" onclick="chuyenTab('tab-phong', this, 'Quản Lý Phòng')"><i class="fas fa-building"></i> Quản Lý Phòng</div>
-            <div class="menu-item" onclick="chuyenTab('tab-nguoithue', this, 'Người Thuê & Hợp Đồng')"><i class="fas fa-user-friends"></i> Người Thuê & HĐ</div>
-            <div class="menu-item" onclick="chuyenTab('tab-hoadon', this, 'Hóa Đơn & Thanh Toán')"><i class="fas fa-file-invoice-dollar"></i> Hóa Đơn & Thanh Toán</div>
-            <div class="menu-item" onclick="chuyenTab('tab-diennuoc', this, 'Chỉ Số Điện Nước')"><i class="fas fa-bolt"></i> Chỉ Số Điện / Nước</div>
+            
+            <div class="menu-item" onclick="chuyenTab('tab-nguoithue', this, 'Người Thuê & Hợp Đồng')"><i class="fas fa-file-signature"></i> Người Thuê & HĐ</div>
+            
+            <div class="menu-item" onclick="chuyenTab('tab-hoadon', this, 'Hóa Đơn Hàng Tháng')"><i class="fas fa-file-invoice-dollar"></i> Hóa Đơn</div>
+            <div class="menu-item" onclick="chuyenTab('tab-doanhthu', this, 'Báo Cáo Doanh Thu')"><i class="fas fa-chart-line"></i> Báo Cáo Doanh Thu</div>
             <div class="menu-item" onclick="chuyenTab('tab-yeucau', this, 'Yêu Cầu Hỗ Trợ')"><i class="fas fa-wrench"></i> Yêu Cầu Hỗ Trợ</div>
-            <div class="menu-item" onclick="chuyenTab('tab-caidat', this, 'Cài Đặt Hệ Thống')"><i class="fas fa-cog"></i> Cài Đặt Hệ Thống</div>
+            <div class="menu-item" onclick="chuyenTab('tab-quenmk', this, 'Yêu Cầu Cấp Lại MK')"><i class="fas fa-key"></i> Cấp Lại MK</div>
         </div>
         <div class="menu-item logout-btn" onclick="xuLyDangXuat()"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</div>
-        <div style="padding: 15px; font-size: 12px; color: #a0aec0; text-align: center; border-top: 1px solid #34495e;">© 2026 Bá Trừ. All rights reserved.</div>
+        <div class="sidebar-copyright">© 2026 Bá Trừ. All rights reserved.</div>
     </nav>
 
     <main class="main-wrapper">
         <header class="top-header">
             <h2 id="pageTitle">Quản Lý Phòng</h2>
-            <div class="admin-profile">
-                <button class="btn-outline" id="btn-darkmode" onclick="toggleDarkMode()"><i class="fas fa-moon"></i> Dark Mode</button>
-                Admin <i class="fas fa-user-circle"></i>
-            </div>
+            <div class="admin-profile">Admin <i class="fas fa-user-circle"></i></div>
         </header>
 
         <div class="content-container">
             
             <div id="tab-phong" class="tab-content active">
-                <div class="area-header">
+                <div class="dashboard-stats">
+                    <div class="stat-card blue"><div class="stat-info"><h4>Tổng Số Phòng</h4><h1 id="count-tong">0</h1></div><i class="fas fa-building stat-icon" style="color: #3182ce;"></i></div>
+                    <div class="stat-card green"><div class="stat-info"><h4>Phòng Đang Trống</h4><h1 id="count-trong">0</h1></div><i class="fas fa-door-open stat-icon" style="color: #38a169;"></i></div>
+                    <div class="stat-card orange"><div class="stat-info"><h4>Phòng Đã Thuê</h4><h1 id="count-thue">0</h1></div><i class="fas fa-user-check stat-icon" style="color: #dd6b20;"></i></div>
+                </div>
+
+                <div class="area-header" style="margin-top: 10px;">
                     <div class="toolbar">
-                        <input type="text" id="searchRoom" class="search-box" placeholder="🔍 Nhập số phòng..." onkeyup="xuLyLocDuLieu()">
+                        <input type="text" id="searchRoom" class="search-box" placeholder="🔍 Nhập số phòng cần tìm..." onkeyup="xuLyLocDuLieu()">
                         <select id="filterStatus" class="filter-box" onchange="xuLyLocDuLieu()">
-                            <option value="all">Tất cả</option>
-                            <option value="Trống">Trống</option>
-                            <option value="Đã thuê">Đã thuê</option>
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="Trống">Phòng Trống</option>
+                            <option value="Đã thuê">Phòng Đã Thuê</option>
                         </select>
                     </div>
                     <button class="btn-add-room" onclick="moPopupThem()"><i class="fas fa-plus"></i> Thêm Phòng</button>
                 </div>
+
                 <table>
                     <thead>
-                        <tr>
-                            <th class="text-center" style="width: 80px;">STT</th>
-                            <th class="text-center">Số Phòng</th>
-                            <th class="text-right">Giá Thuê (VNĐ)</th>
-                            <th class="text-center">Trạng Thái</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
+                        <tr><th class="text-center" style="width: 80px;">STT</th><th class="text-center">Số Phòng</th><th class="text-right">Giá Thuê (VNĐ)</th><th class="text-center">Trạng Thái</th><th class="text-center">Thao tác</th></tr>
                     </thead>
                     <tbody id="bang-du-lieu-phong"></tbody>
                 </table>
@@ -184,21 +164,12 @@
 
             <div id="tab-nguoithue" class="tab-content">
                 <div class="area-header">
-                    <div class="toolbar">
-                        <input type="text" id="searchNguoiThue" class="search-box" placeholder="🔍 Tìm tên khách / CCCD..." onkeyup="locTimKiemNguoiThue()" style="width:280px;">
-                    </div>
-                    <button class="btn-add-room btn-action-top" onclick="moPopupThemNguoiThue()"><i class="fas fa-user-plus"></i> Thêm Khách & Tạo HĐ</button>
+                    <div class="toolbar"><input type="text" id="searchNguoiThue" class="search-box" placeholder="🔍 Tìm tên khách / người ở ghép..." onkeyup="locTimKiemNguoiThue()" style="width:280px;"></div>
+                    <button class="btn-add-room btn-action-top" onclick="moPopupThemNguoiThue()"><i class="fas fa-user-plus"></i> Thêm Khách Mới</button>
                 </div>
                 <table>
                     <thead>
-                        <tr>
-                            <th class="text-center">Phòng</th>
-                            <th>Đại diện (Chủ HĐ)</th>
-                            <th>Liên hệ / CCCD</th>
-                            <th class="text-center">Thời hạn HĐ</th>
-                            <th class="text-center">Tình trạng</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
+                        <tr><th class="text-center">STT</th><th>Đại diện (Chủ HĐ)</th><th>SĐT / CCCD</th><th>Người ở ghép</th><th class="text-center">Phòng</th><th class="text-center">Thao tác</th></tr>
                     </thead>
                     <tbody id="bang-nguoi-thue"></tbody>
                 </table>
@@ -206,10 +177,8 @@
 
             <div id="tab-hoadon" class="tab-content">
                 <div class="area-header">
-                    <div class="toolbar">
-                        <input type="text" id="searchHoaDon" class="search-box" placeholder="🔍 Tìm theo Tháng (VD: 03/2026)" onkeyup="locTimKiemHoaDon()" style="width:250px;">
-                    </div>
-                    <button class="btn-add-room" style="background-color: #3182ce;" onclick="moPopupHoaDon()"><i class="fas fa-plus"></i> Tạo Hóa Đơn Mới</button>
+                    <div class="toolbar"><input type="text" id="searchHoaDon" class="search-box" placeholder="🔍 Tìm theo Tháng (VD: 03/2026)..." onkeyup="locTimKiemHoaDon()"></div>
+                    <button class="btn-add-room btn-action-top" style="background-color: #4fd1c5;" onclick="xuatExcelHoaDon()"><i class="fas fa-file-excel"></i> Xuất File Excel</button>
                 </div>
                 <table>
                     <thead>
@@ -217,8 +186,8 @@
                             <th class="text-center">Mã HĐ</th>
                             <th class="text-center">Phòng</th>
                             <th class="text-center">Tháng</th>
-                            <th class="text-center">Số Điện</th>
-                            <th class="text-center">Số Nước</th>
+                            <th class="text-center">Chi Tiết Điện (3k/số)</th>
+                            <th class="text-center">Chi Tiết Nước (15k/khối)</th>
                             <th class="text-right">Tổng Tiền</th>
                             <th class="text-center">Trạng Thái</th>
                             <th class="text-center">Thao tác</th>
@@ -228,74 +197,49 @@
                 </table>
             </div>
 
-            <div id="tab-diennuoc" class="tab-content">
-                <div class="area-header">
-                    <div class="toolbar">
-                        <input type="text" id="dn-thang" class="filter-box" style="font-weight:600; width:150px; text-align:center;" placeholder="VD: 03/2026">
-                    </div>
-                    <button class="btn-add-room btn-action-top" style="background:#ed8936;" onclick="chotSoHangLoat()"><i class="fas fa-bolt"></i> Chốt Sổ Hàng Loạt</button>
+            <div id="tab-doanhthu" class="tab-content">
+                <div class="dashboard-stats">
+                    <div class="stat-card green"><div class="stat-info"><h4>Tổng Thực Thu (Đã Đóng)</h4><h1 id="dt-thucthu">0 đ</h1></div><i class="fas fa-hand-holding-usd stat-icon" style="color: #38a169;"></i></div>
+                    <div class="stat-card orange"><div class="stat-info"><h4>Tiền Đang Nợ (Chưa Đóng)</h4><h1 id="dt-dangno">0 đ</h1></div><i class="fas fa-file-invoice-dollar stat-icon" style="color: #dd6b20;"></i></div>
+                    <div class="stat-card blue"><div class="stat-info"><h4>Đã Thu Tháng Này</h4><h1 id="dt-thangnay">0 đ</h1></div><i class="fas fa-chart-pie stat-icon" style="color: #3182ce;"></i></div>
+                </div>
+                
+                <div class="area-header" style="margin-bottom: 20px;">
+                    <h2 style="font-size: 18px; color: #4a5568;"><i class="fas fa-list-ol" style="color: #3182ce;"></i> Bảng Kê Doanh Thu Theo Tháng</h2>
                 </div>
                 
                 <table>
                     <thead>
                         <tr>
-                            <th class="text-center">Phòng</th>
-                            <th class="text-center" style="width: 20%; color: #dd6b20;"><i class="fas fa-bolt"></i> Điện Cũ</th>
-                            <th class="text-center" style="width: 20%; color: #dd6b20;"><i class="fas fa-bolt"></i> Điện Mới</th>
-                            <th class="text-center" style="width: 20%; color: #3182ce;"><i class="fas fa-tint"></i> Nước Cũ</th>
-                            <th class="text-center" style="width: 20%; color: #3182ce;"><i class="fas fa-tint"></i> Nước Mới</th>
+                            <th class="text-center">Tháng / Năm</th>
+                            <th class="text-right">Tổng Cần Thu (VNĐ)</th>
+                            <th class="text-right">Đã Thu (VNĐ)</th>
+                            <th class="text-right">Còn Nợ (VNĐ)</th>
+                            <th class="text-center">Tiến Độ Thu</th>
                         </tr>
                     </thead>
-                    <tbody id="tbody-dien-nuoc">
-                        </tbody>
+                    <tbody id="bang-doanh-thu"></tbody>
                 </table>
             </div>
 
             <div id="tab-yeucau" class="tab-content">
-                <div class="area-header" style="margin-bottom: 20px;">
-                    <h2 style="font-size: 18px; color: #4a5568;"><i class="fas fa-bell" style="color: #dd6b20;"></i> Danh sách khách báo hỏng hóc, sửa chữa</h2>
-                </div>
+                <div class="area-header" style="margin-bottom: 20px;"><h2 style="font-size: 18px; color: #4a5568;"><i class="fas fa-bell" style="color: #dd6b20;"></i> Danh sách yêu cầu sửa chữa sự cố</h2></div>
                 <table>
-                    <thead>
-                        <tr>
-                            <th class="text-center">STT</th>
-                            <th class="text-center">Phòng</th>
-                            <th>Nội dung yêu cầu</th>
-                            <th class="text-center">Ngày báo</th>
-                            <th class="text-center">Trạng Thái</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th class="text-center">STT</th><th class="text-center">Phòng</th><th>Nội dung yêu cầu</th><th class="text-center">Ngày gửi</th><th class="text-center">Trạng Thái</th><th class="text-center">Thao tác</th></tr></thead>
                     <tbody id="bang-yeu-cau"></tbody>
                 </table>
             </div>
 
-            <div id="tab-caidat" class="tab-content">
-                <div class="settings-grid">
-                    <div class="settings-card">
-                        <h3><i class="fas fa-tags" style="color:#38a169;"></i> Cấu hình giá Dịch vụ</h3>
-                        <div class="modal-form-item"><label>Giá Điện (VNĐ/số)</label><input type="number" id="cd-gia-dien" value="3000"></div>
-                        <div class="modal-form-item"><label>Giá Nước (VNĐ/khối)</label><input type="number" id="cd-gia-nuoc" value="15000"></div>
-                    </div>
-                    <div class="settings-card">
-                        <h3><i class="fas fa-university" style="color:#3182ce;"></i> Thông tin nhận thanh toán (QR)</h3>
-                        <div class="modal-form-item"><label>Ngân hàng</label><input type="text" id="cd-ngan-hang" placeholder="VD: MB Bank"></div>
-                        <div class="flex-row">
-                            <div class="modal-form-item"><label>Tên Chủ TK</label><input type="text" id="cd-ten-tk" placeholder="VD: NGUYEN VAN A"></div>
-                            <div class="modal-form-item"><label>Số Tài Khoản</label><input type="text" id="cd-stk" placeholder="VD: 0123456789"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; padding-right: 10px;">
-                    <button class="btn-add-room" style="padding: 12px 30px; font-size: 15px;" onclick="xuLyLuuCaiDat()">
-                        <i class="fas fa-save"></i> Lưu Toàn Bộ Cài Đặt
-                    </button>
-                </div>
+            <div id="tab-quenmk" class="tab-content">
+                <div class="area-header" style="margin-bottom: 20px;"><h2 style="font-size: 18px; color: #4a5568;"><i class="fas fa-shield-alt" style="color: #3182ce;"></i> Khách yêu cầu cấp lại mật khẩu</h2></div>
+                <table>
+                    <thead><tr><th>Mã YC</th><th class="text-center">Phòng</th><th class="text-center">Số Điện Thoại</th><th>Email</th><th class="text-center">Trạng Thái</th><th class="text-center">Thao tác</th></tr></thead>
+                    <tbody id="bang-quen-mk"></tbody>
+                </table>
             </div>
 
             <div class="dev-footer">
-                <div class="dev-line"><i class="fas fa-user-tie"></i> <span style="font-weight:600;">Bá Trừ | IT Developer</span></div>
+                <div class="dev-line"><i class="fas fa-user-tie"></i> <span style="color:#718096; font-weight:600;">Bá Trừ | IT Developer</span></div>
                 <div class="dev-line"><i class="fas fa-envelope"></i> <span>batru.dev@gmail.com</span></div>
                 <div class="dev-line"><i class="fas fa-mobile-alt"></i> <span>035****735</span></div>
                 <div class="dev-line"><i class="fas fa-laptop"></i> <span>github.com/batru</span></div>
@@ -303,31 +247,58 @@
         </div>
     </main>
 
-    <div class="modal-overlay" id="popup-ho-so-phong">
-        <div class="modal-box wide-box">
-            <div class="modal-header-wide">
-                <h3><i class="fas fa-folder-open" style="color: #fbd38d;"></i> Hồ Sơ Phòng: <span id="hs-ten-phong" style="color:#68d391; margin-left: 5px;">P.---</span></h3>
-                <button class="close-btn" onclick="dongTatCaPopup()"><i class="fas fa-times"></i></button>
+    <div style="display: none;">
+        <div id="mau-hop-dong" style="padding: 40px; background: white; color: black; font-family: 'Times New Roman', Times, serif; line-height: 1.6; width: 800px;">
+            <h3 style="text-align: center; margin-bottom: 0; font-size: 18px;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
+            <h4 style="text-align: center; margin-top: 5px; text-decoration: underline; font-size: 16px;">Độc lập - Tự do - Hạnh phúc</h4>
+            <br>
+            <h2 style="text-align: center; margin-bottom: 20px; font-size: 22px;">HỢP ĐỒNG THUÊ PHÒNG TRỌ</h2>
+            <p style="font-style: italic; text-align: center;">Hôm nay, ngày <span id="hd-ngay"></span> tháng <span id="hd-thang"></span> năm <span id="hd-nam"></span>. Tại địa chỉ phòng trọ, chúng tôi gồm có:</p>
+            <br>
+            <p><strong>BÊN CHO THUÊ (BÊN A): QUẢN LÝ NHÀ TRỌ HTT MANAGER</strong></p>
+            <p>- Đại diện: Ông/Bà Chủ Trọ (Quản lý HTT Manager)</p>
+            <p>- Số điện thoại liên hệ: 035****735</p>
+            <br>
+            <p><strong>BÊN THUÊ (BÊN B):</strong></p>
+            <p>- Ông/Bà: <strong id="hd-ten-khach">.........................</strong></p>
+            <p>- Số CMND/CCCD: <strong id="hd-cccd">.........................</strong></p>
+            <p>- Số điện thoại liên hệ: <strong id="hd-sdt">.........................</strong></p>
+            <br>
+            <p><strong>Hai bên cùng thỏa thuận và ký kết hợp đồng thuê phòng với các điều khoản sau:</strong></p>
+            <p><strong>Điều 1: Nội dung thuê</strong><br>Bên A đồng ý cho bên B thuê phòng trọ số <strong id="hd-so-phong">......</strong> thuộc hệ thống quản lý HTT Manager.</p>
+            <p><strong>Điều 2: Giá cả và Phương thức thanh toán</strong><br>- Giá thuê phòng là: <strong id="hd-gia-phong" style="color: #e53e3e;">......</strong> / tháng. (Chưa bao gồm tiền điện, nước và các dịch vụ khác).<br>- Tiền điện: 3.000 VNĐ/số. Tiền nước: 15.000 VNĐ/khối.<br>- Phương thức thanh toán: Chuyển khoản hoặc tiền mặt từ ngày 01 đến ngày 05 hàng tháng.</p>
+            <p><strong>Điều 3: Tiền đặt cọc</strong><br>- Bên B đã đặt cọc cho bên A số tiền để đảm bảo thực hiện hợp đồng.<br>- Tiền cọc sẽ được hoàn trả đầy đủ sau khi bên B thanh lý hợp đồng, trả phòng và thanh toán hết các khoản phí phát sinh.</p>
+            <p><strong>Điều 4: Trách nhiệm của Bên B (Người thuê)</strong><br>- Thanh toán tiền phòng và các chi phí đầy đủ, đúng hạn hàng tháng theo thông báo trên web HTT Manager.<br>- Giữ gìn an ninh trật tự, vệ sinh chung, tuyệt đối không tàng trữ chất cấm, vũ khí trái pháp luật.<br>- Tự bảo quản tài sản cá nhân. Nếu làm hư hỏng tài sản chung của nhà trọ phải có trách nhiệm bồi thường.</p>
+            <p><strong>Điều 5: Cam kết chung</strong><br>Hợp đồng được lập thành 02 bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản để làm bằng chứng thực hiện.</p>
+            <br>
+            <div style="display: flex; justify-content: space-between; margin-top: 30px; padding: 0 50px;">
+                <div style="text-align: center;"><strong>ĐẠI DIỆN BÊN A</strong><br><i style="font-size:14px;">(Ký, ghi rõ họ tên)</i><br><br><br><br><br><strong>Quản lý HTT</strong></div>
+                <div style="text-align: center;"><strong>ĐẠI DIỆN BÊN B</strong><br><i style="font-size:14px;">(Ký, ghi rõ họ tên)</i><br><br><br><br><br><strong id="hd-ky-ten-b"></strong></div>
             </div>
-            <div class="profile-content" id="khu-vuc-hoso-noidung">
-                </div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="popup-nguoi-thue" style="overflow-y: auto;">
-        <div class="modal-box" style="width: 750px; margin-top: 50px; margin-bottom: 50px;">
-            <h3 id="popup-nt-title" style="color:#2d3748; margin-bottom: 20px;"><i class="fas fa-user-plus"></i> Thêm Khách & Tạo Hợp Đồng</h3>
-            
-            <div style="background: #f8fafc; padding: 15px 20px 5px 20px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+
+    <div class="modal-overlay" id="popup-ho-so-phong">
+        <div class="modal-box wide-box">
+            <div class="modal-header-wide">
+                <h3><i class="fas fa-folder-open"></i> Hồ Sơ Phòng: <span id="hs-ten-phong" style="color:#68d391; margin-left: 5px;">P.---</span></h3>
+                <button class="close-btn" onclick="dongTatCaPopup()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="profile-content" id="khu-vuc-hoso-noidung"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="popup-nguoi-thue">
+        <div class="modal-box" style="width: 700px;">
+            <h3 id="popup-nt-title" style="color:#2d3748; margin-bottom: 20px;">Thêm Khách Mới</h3>
+            <div style="background: #f8fafc; padding: 15px 20px 5px 20px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
                 <p style="font-size: 13px; font-weight: 700; color: #3182ce; text-transform: uppercase; margin-bottom: 15px;"><i class="fas fa-user-shield"></i> Đại diện Chủ Hợp Đồng</p>
                 <div class="flex-row">
+                    <div class="modal-form-item"><label>Họ và Tên</label><input type="text" id="in-nt-ten" placeholder="VD: Nguyễn Văn A"></div>
                     <div class="modal-form-item">
-                        <label>Họ và Tên</label>
-                        <input type="text" id="in-nt-ten">
-                    </div>
-                    <div class="modal-form-item">
-                        <label>Phòng</label>
-                        <input type="text" id="in-nt-phong-text" list="danh-sach-phong-datalist">
+                        <label>Phòng (Gõ để tìm)</label>
+                        <input type="text" id="in-nt-phong-text" list="danh-sach-phong-datalist" autocomplete="off" placeholder="VD: 101">
                         <datalist id="danh-sach-phong-datalist"></datalist>
                     </div>
                 </div>
@@ -336,271 +307,491 @@
                     <div class="modal-form-item"><label>Số CCCD</label><input type="text" id="in-nt-cccd"></div>
                 </div>
             </div>
-            
-            <div style="background: #fffaf0; padding: 15px 20px 5px 20px; border-radius: 10px; border: 1px solid #feebc8; margin-bottom: 20px;">
-                <p style="font-size: 13px; font-weight: 700; color: #dd6b20; text-transform: uppercase; margin-bottom: 15px;"><i class="fas fa-file-signature"></i> Hợp đồng</p>
-                <div class="flex-row">
-                    <div class="modal-form-item"><label>Ngày bắt đầu</label><input type="date" id="in-nt-ngaybatdau"></div>
-                    <div class="modal-form-item"><label>Ngày hết hạn</label><input type="date" id="in-nt-ngayketthuc"></div>
+
+            <div style="border-top: 2px dashed #e2e8f0; padding-top: 20px; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <label style="margin:0; font-size: 14px; font-weight: 700; color: #38a169;"><i class="fas fa-users"></i> Danh sách người ở ghép</label>
+                    <button class="btn-nav" type="button" onclick="themDongNguoiOGhep()" style="font-size: 12px; padding: 8px 12px; color: #38a169; border-color: #c6f6d5; background: #f0fff4;"><i class="fas fa-plus"></i> Thêm người</button>
                 </div>
-                <div class="flex-row">
-                    <div class="modal-form-item"><label>Tiền cọc (VNĐ)</label><input type="number" id="in-nt-tiencoc" placeholder="Ví dụ: 2000000"></div>
-                    <div class="modal-form-item" style="opacity: 0.5;"><label>File Hợp đồng (Bỏ qua)</label><input type="file" disabled style="padding: 7px; font-size:12px; cursor: not-allowed;"></div>
-                </div>
+                <div id="container-nguoi-oghep" style="overflow-y: auto; max-height: 250px; padding-right: 5px;"></div>
             </div>
-            
-            <div style="border-top: 2px dashed #e2e8f0; padding-top: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <label style="font-weight: 700; color: #38a169;"><i class="fas fa-users"></i> Người ở ghép</label>
-                    <button type="button" onclick="themDongNguoiOGhep()" style="font-size: 12px; padding: 8px 15px; color: #38a169; border: 1px solid #c6f6d5; background: #f0fff4; border-radius: 6px; cursor: pointer; font-weight: 600;"><i class="fas fa-plus"></i> Thêm người</button>
-                </div>
-                <div id="container-nguoi-oghep" style="overflow-y: auto; max-height: 180px; padding-right: 5px;"></div>
-            </div>
-            
+
             <div class="modal-btn-area">
-                <button style="border:none; background:none; font-weight:600; cursor:pointer; color:#718096" onclick="dongTatCaPopup()">Hủy bỏ</button>
-                <button class="btn-add-room" onclick="xuLyLuuNguoiThue()"><i class="fas fa-save"></i> Lưu hồ sơ</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal-overlay" id="popup-xem-hopdong">
-        <div class="modal-box" style="width: 600px;">
-            <div class="modal-header">
-                <h3 style="color:#dd6b20; margin:0;"><i class="fas fa-file-signature"></i> Chi Tiết Hợp Đồng</h3>
-                <button class="close-btn" onclick="dongTatCaPopup()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="profile-content" id="noidung-hopdong" style="padding: 10px 0; background: transparent;"></div>
-            <div class="modal-btn-area">
-                <button class="btn-add-room" style="background:#718096; width: 100%; justify-content: center;" onclick="dongTatCaPopup()">Đóng</button>
+                <button class="btn-nav" style="border:none" onclick="dongTatCaPopup()">Hủy</button>
+                <button class="btn-add-room" onclick="xuLyLuuNguoiThue()"><i class="fas fa-save"></i> Lưu thông tin</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="popup-hoadon">
-        <div class="modal-box">
-            <h3 style="color:#2d3748; margin-bottom: 20px;"><i class="fas fa-receipt"></i> Lập Hóa Đơn Tháng</h3>
+        <div class="modal-box" style="width: 500px;">
+            <h3 style="color:#2d3748; margin-bottom: 20px;">Tính Tiền: <span id="ten-phong-hd" style="color: #3182ce;"></span></h3>
+            <div class="modal-form-item"><label>Tháng/Năm</label><input type="text" id="hd-thang" placeholder="VD: 03/2026"></div>
             <div class="flex-row">
-                <div class="modal-form-item">
-                    <label>Phòng nộp tiền</label>
-                    <select id="hd-phong-select">
-                        <option value="">-- Chọn phòng --</option>
-                    </select>
-                </div>
-                <div class="modal-form-item"><label>Tháng/Năm</label><input type="text" id="hd-thang" placeholder="VD: 03/2026"></div>
+                <div class="modal-form-item"><label>Điện Cũ</label><input type="number" id="hd-dien-cu"></div>
+                <div class="modal-form-item"><label>Điện Mới</label><input type="number" id="hd-dien-moi"></div>
             </div>
-            
-            <div style="padding: 15px; border: 1px dashed #cbd5e0; border-radius: 8px; margin-bottom: 15px; background: #f8fafc;">
-                <p style="font-weight: bold; color: #4a5568; margin-bottom: 10px;"><i class="fas fa-bolt" style="color: #dd6b20;"></i> Chỉ số điện</p>
-                <div class="flex-row">
-                    <div class="modal-form-item" style="margin:0;"><label>Số cũ</label><input type="number" id="hd-dien-cu"></div>
-                    <div class="modal-form-item" style="margin:0;"><label>Số mới</label><input type="number" id="hd-dien-moi"></div>
-                </div>
+            <div class="flex-row">
+                <div class="modal-form-item"><label>Nước Cũ</label><input type="number" id="hd-nuoc-cu"></div>
+                <div class="modal-form-item"><label>Nước Mới</label><input type="number" id="hd-nuoc-moi"></div>
             </div>
-            
-            <div style="padding: 15px; border: 1px dashed #cbd5e0; border-radius: 8px; background: #f8fafc;">
-                <p style="font-weight: bold; color: #4a5568; margin-bottom: 10px;"><i class="fas fa-tint" style="color: #3182ce;"></i> Chỉ số nước</p>
-                <div class="flex-row">
-                    <div class="modal-form-item" style="margin:0;"><label>Số cũ</label><input type="number" id="hd-nuoc-cu"></div>
-                    <div class="modal-form-item" style="margin:0;"><label>Số mới</label><input type="number" id="hd-nuoc-moi"></div>
-                </div>
-            </div>
-            
             <div class="modal-btn-area">
-                <button style="border:none; background:none; font-weight:600; cursor:pointer; color:#718096" onclick="dongTatCaPopup()">Hủy bỏ</button>
-                <button class="btn-add-room" style="background:#3182ce" onclick="xuLyLuuHoaDon()"><i class="fas fa-save"></i> Chốt Hóa Đơn</button>
+                <button class="btn-nav" style="border:none" onclick="dongTatCaPopup()">Hủy bỏ</button>
+                <button class="btn-add-room" style="background:#3182ce" onclick="xuLyLuuHoaDon()"><i class="fas fa-file-invoice"></i> Tạo Hóa Đơn</button>
             </div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="popup-xem-hoadon">
-        <div class="modal-box" style="width: 550px;">
-            <div class="modal-header">
-                <h3 style="color:#3182ce; margin:0;"><i class="fas fa-print"></i> Biên Lai Thu Tiền</h3>
-                <button class="close-btn" onclick="dongTatCaPopup()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="profile-content" id="noidung-in-hoadon" style="padding: 10px 0; background: transparent;"></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="popup-nhap-lieu"><div class="modal-box" style="width: 440px;"><h3 id="popup-title" style="color:#2d3748; margin-bottom: 20px;">Thêm Phòng</h3><div class="modal-form-item"><label>Tên / Số Phòng</label><input type="text" id="in-so-phong"></div><div class="modal-form-item"><label>Giá Thuê (VNĐ)</label><input type="number" id="in-gia-thue"></div><div class="modal-form-item" id="khu-vuc-doi-tt"><label>Trạng Thái</label><input type="text" value="🔄 Tự động cập nhật" disabled style="background-color: #edf2f7; color: #a0aec0;"><input type="hidden" id="in-trang-thai" value="Trống"></div><div class="modal-btn-area"><button style="border:none; background:none; font-weight:600; cursor:pointer; color:#718096" onclick="dongTatCaPopup()">Hủy bỏ</button><button class="btn-add-room" onclick="xuLyLuuPhong()"><i class="fas fa-save"></i> Lưu dữ liệu</button></div></div></div>
-
-    <div class="modal-overlay" id="popup-confirm-xoa"><div class="modal-box" style="text-align:center; width:400px;"><i class="fas fa-exclamation-triangle" style="font-size: 45px; color: #e53e3e; margin-bottom: 15px;"></i><h3 style="color:#e53e3e; margin-bottom:10px">Xóa Dữ Liệu?</h3><p style="color: #718096; font-size: 14px; margin-bottom: 25px;">Hành động này không thể hoàn tác.</p><div class="modal-btn-area" style="justify-content: center;"><button style="border:none; background:none; font-weight:600; cursor:pointer; color:#718096" onclick="dongTatCaPopup()">Hủy</button><button class="btn-add-room" style="background:#e53e3e" id="btn-xac-nhan-xoa"><i class="fas fa-trash"></i> Đồng ý Xóa</button></div></div></div>
+    <div class="modal-overlay" id="popup-nhap-lieu"><div class="modal-box" style="width: 440px;"><h3 id="popup-title" style="color:#2d3748; margin-bottom: 20px;">Thêm Phòng</h3><div class="modal-form-item"><label>Tên / Số Phòng</label><input type="text" id="in-so-phong"></div><div class="modal-form-item"><label>Giá Thuê Mặc Định (VNĐ)</label><input type="number" id="in-gia-thue"></div><div class="modal-form-item" id="khu-vuc-doi-tt"><label>Trạng Thái Hiện Tại</label><input type="text" value="🔄 Tự động cập nhật theo Khách" disabled style="background-color: #edf2f7; color: #a0aec0; cursor: not-allowed; font-style: italic;"><input type="hidden" id="in-trang-thai" value="Trống"></div><div class="modal-btn-area"><button class="btn-nav" style="border:none" onclick="dongTatCaPopup()">Hủy bỏ</button><button class="btn-add-room" onclick="xuLyLuuPhong()"><i class="fas fa-save"></i> Lưu dữ liệu</button></div></div></div>
+    <div class="modal-overlay" id="popup-confirm-xoa"><div class="modal-box delete-confirm" style="text-align:center; width:400px;"><i class="fas fa-exclamation-triangle" style="font-size: 45px; color: #e53e3e; margin-bottom: 15px;"></i><h3 style="color:#e53e3e; margin-bottom:10px">Xóa Dữ Liệu?</h3><p style="color: #718096; font-size: 14px; margin-bottom: 25px;">Hành động này không thể hoàn tác.</p><div class="modal-btn-area" style="justify-content: center;"><button class="btn-nav" style="border:none" onclick="dongTatCaPopup()">Hủy</button><button class="btn-add-room" style="background:#e53e3e" id="btn-xac-nhan-xoa"><i class="fas fa-trash"></i> Đồng ý Xóa</button></div></div></div>
 
     <script>
         const API_PHONG = "http://localhost:5062/api/phong"; 
+        const API_QUENMK = "http://localhost:5062/api/quenmatkhau";
         const API_NGUOITHUE = "http://localhost:5062/api/nguoithue"; 
         const API_HOADON = "http://localhost:5062/api/hoadon"; 
         const API_YEUCAU = "http://localhost:5062/api/yeucau";
-        const API_CAIDAT = "http://localhost:5062/api/caidat"; // KHAI BÁO THÊM API CÀI ĐẶT
         
         let cheDoHienTai = 'them', currentIdPhong_Sua = null, currentIdXoa = null, loaiXoa = null;
-        let cheDoNguoiThue = 'them', currentIdNguoiThue_Sua = null;
+        let cheDoNguoiThue = 'them', currentIdNguoiThue_Sua = null, currentIdPhong_HoaDon = null;
+        
         let tatCaDuLieuPhong = [], tatCaNguoiThue = [], tatCaHoaDon = [], tatCaYeuCau = [];
 
-        function checkDarkMode() { if (localStorage.getItem('adminDarkMode') === 'enabled') { document.body.classList.add('dark-mode'); capNhatNutDarkMode(true); } }
-        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); const isDark = document.body.classList.contains('dark-mode'); localStorage.setItem('adminDarkMode', isDark ? 'enabled' : 'disabled'); capNhatNutDarkMode(isDark); }
-        function capNhatNutDarkMode(isDark) { const btn = document.getElementById('btn-darkmode'); if(btn) btn.innerHTML = isDark ? `<i class="fas fa-sun"></i> Light Mode` : `<i class="fas fa-moon"></i> Dark Mode`; }
-        function chuyenTab(idTabCanMo, element, titleName) { document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active')); document.getElementById(idTabCanMo).classList.add('active'); document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active')); if(element) element.classList.add('active'); if(titleName) document.getElementById('pageTitle').innerText = titleName; }
         function formatTien(tien) { return new Intl.NumberFormat('vi-VN').format(tien) + " đ"; }
 
-        // TẢI DỮ LIỆU
+        function chuyenTab(idTabCanMo, element, titleName) { 
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active')); 
+            document.getElementById(idTabCanMo).classList.add('active'); 
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            if(element) element.classList.add('active');
+            if(titleName) document.getElementById('pageTitle').innerText = titleName;
+            document.querySelector('.content-container').scrollTo(0, 0); 
+        }
+
         async function loadDuLieuTuSQL() {
             try {
-                const resPhong = await fetch(API_PHONG); tatCaDuLieuPhong = await resPhong.json();
-                const resNT = await fetch(API_NGUOITHUE); tatCaNguoiThue = await resNT.json();
+                const resPhong = await fetch(API_PHONG); 
+                if(resPhong.ok) tatCaDuLieuPhong = await resPhong.json();
                 
-                tatCaDuLieuPhong.forEach(p => { p.trangThai = tatCaNguoiThue.some(nt => nt.maPhong === p.maPhong) ? "Đã thuê" : "Trống"; });
-                xuLyLocDuLieu(); veBangNguoiThue(tatCaNguoiThue);
-                
-                let luaChonPhong = `<option value="">-- Chọn phòng --</option>`;
-                let danhSachDatalist = "";
+                const resNT = await fetch(API_NGUOITHUE); 
+                if(resNT.ok) tatCaNguoiThue = await resNT.json();
+
                 tatCaDuLieuPhong.forEach(p => { 
-                    let tenP = p.soPhong.toUpperCase().startsWith("P.") ? p.soPhong : "P." + p.soPhong;
-                    danhSachDatalist += `<option value="${tenP}">`;
-                    if(p.trangThai === "Đã thuê") luaChonPhong += `<option value="${p.maPhong}">${tenP}</option>`;
+                    const coKhach = tatCaNguoiThue.some(nt => nt.maPhong === p.maPhong);
+                    p.trangThai = coKhach ? "Đã thuê" : "Trống";
                 });
-                document.getElementById('hd-phong-select').innerHTML = luaChonPhong;
-                document.getElementById('danh-sach-phong-datalist').innerHTML = danhSachDatalist;
 
-                const resHD = await fetch(API_HOADON); 
-                if(resHD.ok) { tatCaHoaDon = await resHD.json(); veBangHoaDon(tatCaHoaDon); }
-                veBangDienNuoc();
+                let countTrong = 0, countThue = 0;
+                tatCaDuLieuPhong.forEach(p => { if(p.trangThai === "Trống") countTrong++; else countThue++; });
+                document.getElementById("count-tong").innerText = tatCaDuLieuPhong.length; 
+                document.getElementById("count-trong").innerText = countTrong; 
+                document.getElementById("count-thue").innerText = countThue;
+                
+                xuLyLocDuLieu();
+                veBangNguoiThue(tatCaNguoiThue);
 
-                const resYC = await fetch(API_YEUCAU); 
-                if(resYC.ok) { tatCaYeuCau = await resYC.json(); veBangYeuCau(tatCaYeuCau); }
-
-                // TẢI DỮ LIỆU CÀI ĐẶT
-                const resCD = await fetch(API_CAIDAT);
-                if(resCD.ok) {
-                    let cd = await resCD.json();
-                    document.getElementById('cd-gia-dien').value = cd.giaDien;
-                    document.getElementById('cd-gia-nuoc').value = cd.giaNuoc;
-                    document.getElementById('cd-ngan-hang').value = cd.nganHang || '';
-                    document.getElementById('cd-ten-tk').value = cd.tenChuTaiKhoan || '';
-                    document.getElementById('cd-stk').value = cd.soTaiKhoan || '';
-                }
-
-            } catch (error) { console.error(error); }
-        }
-
-        // ==============================================================
-        // KHU VỰC: QUẢN LÝ PHÒNG
-        // ==============================================================
-        function xuLyLocDuLieu() { const t = document.getElementById('searchRoom').value.toLowerCase(); const s = document.getElementById('filterStatus').value; veBangDuLieu(tatCaDuLieuPhong.filter(p => p.soPhong.toLowerCase().includes(t) && (s === 'all' || p.trangThai === s))); }
-        function veBangDuLieu(ds) { const b = document.getElementById("bang-du-lieu-phong"); b.innerHTML = ""; if (ds.length === 0) { b.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:40px;">Không có dữ liệu</td></tr>`; return; } ds.forEach((p, i) => { let badge = p.trangThai === "Trống" ? "empty" : "rented"; let tenP = p.soPhong.toUpperCase().startsWith("P.") ? p.soPhong : "P." + p.soPhong; b.innerHTML += `<tr><td class="text-center">${i + 1}</td><td class="text-center"><strong>${tenP}</strong></td><td class="text-right col-price">${formatTien(p.giaThue)}</td><td class="text-center"><span class="badge-status ${badge}">${p.trangThai}</span></td><td class="text-center"><button class="row-action-btn" title="Hồ sơ" onclick="moPopupChiTiet(${p.maPhong}, '${tenP}', ${p.giaThue}, '${p.trangThai}')"><i class="fas fa-eye" style="color:#805ad5"></i></button><button class="row-action-btn" title="Sửa" onclick="moPopupSua(${p.maPhong}, '${tenP}', ${p.giaThue}, '${p.trangThai}')"><i class="fas fa-pen" style="color:#3182ce"></i></button><button class="row-action-btn btn-row-delete" onclick="moPopupConfirmXoa(${p.maPhong}, 'phong')"><i class="fas fa-trash"></i></button></td></tr>`; }); }
-        function moPopupThem() { document.getElementById('popup-title').innerText="Thêm Phòng"; document.getElementById('in-so-phong').value=""; document.getElementById('in-gia-thue').value=""; document.getElementById('khu-vuc-doi-tt').style.display='none'; cheDoHienTai='them'; document.getElementById('popup-nhap-lieu').style.display='flex'; }
-        function moPopupSua(id, so, gia, tt) { cheDoHienTai='sua'; currentIdPhong_Sua=id; document.getElementById('popup-title').innerText="Sửa Phòng: "+so; document.getElementById('in-so-phong').value=so; document.getElementById('in-gia-thue').value=gia; document.getElementById('in-trang-thai').value=tt; document.getElementById('khu-vuc-doi-tt').style.display='block'; document.getElementById('popup-nhap-lieu').style.display='flex'; }
-        async function xuLyLuuPhong() { const pData = { soPhong: document.getElementById('in-so-phong').value.trim(), giaThue: Number(document.getElementById('in-gia-thue').value), trangThai: document.getElementById('in-trang-thai').value }; if (!pData.soPhong || !pData.giaThue) return alert("Nhập đủ thông tin!"); try { if (cheDoHienTai === 'them') { await fetch(API_PHONG, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pData) }); } else { await fetch(`${API_PHONG}/${currentIdPhong_Sua}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pData) }); } dongTatCaPopup(); loadDuLieuTuSQL(); } catch(e) { alert("Lỗi khi lưu phòng vào C#"); } }
-        function moPopupChiTiet(maPhong, tenPhong, giaThue, trangThai) { document.getElementById('hs-ten-phong').innerText = tenPhong; const khuVuc = document.getElementById('khu-vuc-hoso-noidung'); let khach = tatCaNguoiThue.find(nt => nt.maPhong === maPhong); if (trangThai === "Trống" || !khach) { khuVuc.innerHTML = `<div style="text-align:center; padding: 60px 20px;"><i class="fas fa-door-open" style="font-size: 60px; color: #cbd5e0; margin-bottom: 20px;"></i><h3 style="color: #4a5568;">Phòng này hiện đang trống!</h3><p style="color: #718096; margin-top: 10px;">Chưa có dữ liệu khách thuê.</p></div>`; } else { let hd = tatCaHoaDon.find(h => h.maPhong === maPhong); let htmlHoaDon = `<p style="text-align:center; color:#718096; margin-top: 30px;">Phòng này chưa tính hóa đơn tháng nào.</p>`; if(hd) { let tienDien = (hd.soDienMoi - hd.soDienCu) * hd.donGiaDien; let tienNuoc = (hd.soNuocMoi - hd.soNuocCu) * hd.donGiaNuoc; htmlHoaDon = `<div class="calc-row"><div style="display:flex; justify-content:space-between; font-weight:600;"><span><i class="fas fa-bolt" style="color:#dd6b20"></i> Điện</span><span>${hd.soDienMoi - hd.soDienCu} số</span></div><div class="math">Mới: ${hd.soDienMoi} - Cũ: ${hd.soDienCu}</div><div class="money">${formatTien(tienDien)}</div></div><div class="calc-row"><div style="display:flex; justify-content:space-between; font-weight:600;"><span><i class="fas fa-tint" style="color:#3182ce"></i> Nước</span><span>${hd.soNuocMoi - hd.soNuocCu} khối</span></div><div class="math">Mới: ${hd.soNuocMoi} - Cũ: ${hd.soNuocCu}</div><div class="money">${formatTien(tienNuoc)}</div></div><div class="info-row" style="margin-top: 15px; border-top: 2px solid #e2e8f0; padding-top: 10px;"><span class="lbl" style="font-size: 16px; font-weight:bold; color: #2d3748;">TỔNG CỘNG:</span> <span class="val" style="font-size: 20px; color: #e53e3e;">${formatTien(giaThue + tienDien + tienNuoc)}</span></div>`; } let tableOGhep = `<tr><td colspan="3" style="text-align:center; color:#a0aec0; padding:15px;">Chưa có người ở ghép</td></tr>`; if(khach.nguoiOGhep) { try { let dsOghep = JSON.parse(khach.nguoiOGhep); if(Array.isArray(dsOghep) && dsOghep.length > 0) { tableOGhep = dsOghep.map(og => `<tr><td><strong>${og.ten}</strong></td><td>${og.sdt || '-'}</td><td>${og.cccd || '-'}</td></tr>`).join(''); } } catch(e) {} } let tienC = khach.tienCoc ? formatTien(khach.tienCoc) : "0 đ"; khuVuc.innerHTML = `<div class="profile-grid"><div class="profile-card"><h4><i class="fas fa-user-tie" style="color: #38a169;"></i> Đại Diện Thuê (Chủ HĐ)</h4><div class="info-row"><span class="lbl">Họ và tên:</span> <span class="val">${khach.hoTen}</span></div><div class="info-row"><span class="lbl">SĐT liên hệ:</span> <span class="val">${khach.soDienThoai || '(Chưa nhập)'}</span></div><div class="info-row"><span class="lbl">Số CCCD:</span> <span class="val">${khach.cccd || '(Chưa nhập)'}</span></div><div style="margin: 15px 0; border-top: 1px dashed #e2e8f0;"></div><div class="info-row"><span class="lbl">Tiền phòng gốc:</span> <span class="val" style="color:#dd6b20">${formatTien(giaThue)}</span></div><div class="info-row"><span class="lbl">Tiền cọc:</span> <span class="val" style="color:#e53e3e">${tienC}</span></div></div><div class="profile-card blue-top"><h4><i class="fas fa-file-invoice-dollar" style="color: #3182ce;"></i> Chỉ số tháng gần nhất</h4>${htmlHoaDon}</div></div><div class="profile-card" style="border-top-color: #9f7aea;"><h4><i class="fas fa-users" style="color: #9f7aea;"></i> Danh sách người ở ghép (Cùng phòng)</h4><table style="box-shadow: none; border: 1px solid #e2e8f0; margin-bottom: 0;"><thead style="background: #f8fafc;"><tr><th>Họ và Tên</th><th>Số Điện Thoại</th><th>Số CCCD</th></tr></thead><tbody>${tableOGhep}</tbody></table></div>`; } document.getElementById('popup-ho-so-phong').style.display = 'flex'; }
-
-        // ==============================================================
-        // KHU VỰC: QUẢN LÝ NGƯỜI THUÊ & HỢP ĐỒNG
-        // ==============================================================
-        function locTimKiemNguoiThue() { const t = document.getElementById('searchNguoiThue').value.toLowerCase(); veBangNguoiThue(tatCaNguoiThue.filter(nt => nt.hoTen.toLowerCase().includes(t) || (nt.cccd && nt.cccd.includes(t)))); }
-        function veBangNguoiThue(ds) { const b = document.getElementById("bang-nguoi-thue"); b.innerHTML = ""; if (!ds || ds.length === 0) { b.innerHTML = `<tr><td colspan="6" class="text-center" style="padding: 30px;">Chưa có khách</td></tr>`; return; } ds.forEach(nt => { try { let p = tatCaDuLieuPhong.find(x => x.maPhong == nt.maPhong); let tenPhong = "Trống"; if (p && p.soPhong) { tenPhong = p.soPhong.toUpperCase().startsWith("P.") ? p.soPhong : "P." + p.soPhong; } let tinhTrang = `<span class="badge-status empty">Chưa tạo HĐ</span>`; let thoiHanHD = "Chưa thiết lập"; if(nt.ngayBatDau && nt.ngayKetThuc) { let dateBD = new Date(nt.ngayBatDau).toLocaleDateString('vi-VN'); let dateKT = new Date(nt.ngayKetThuc).toLocaleDateString('vi-VN'); thoiHanHD = `${dateBD} - ${dateKT}`; let end = new Date(nt.ngayKetThuc); let now = new Date(); if (end < now) { tinhTrang = `<span class="badge-status danger">Đã hết hạn</span>`; } else if (end >= now && (end - now) <= (30 * 24 * 60 * 60 * 1000)) { tinhTrang = `<span class="badge-status pending">Sắp hết hạn</span>`; } else { tinhTrang = `<span class="badge-status success">Đang hiệu lực</span>`; } } b.innerHTML += `<tr><td class="text-center"><span class="badge-status rented" style="font-size:14px; padding:8px 15px;">${tenPhong}</span></td><td><strong style="color:#2d3748; font-size:15px;">${nt.hoTen}</strong></td><td style="color:#718096; font-size:13px;">SĐT: ${nt.soDienThoai||'-'}<br>CCCD: ${nt.cccd||'-'}</td><td class="text-center">${thoiHanHD}</td><td class="text-center">${tinhTrang}</td><td class="text-center"><button class="row-action-btn" style="color:#dd6b20;" title="Xem HĐ" onclick="moPopupXemHopDong(${nt.maNguoiThue})"><i class="fas fa-file-signature"></i></button><button class="row-action-btn" title="Sửa" onclick="moPopupSuaNguoiThue(${nt.maNguoiThue})"><i class="fas fa-pen" style="color:#3182ce"></i></button><button class="row-action-btn btn-row-delete" onclick="moPopupConfirmXoa(${nt.maNguoiThue}, 'nguoithue')"><i class="fas fa-trash"></i></button></td></tr>`; } catch(err) { console.error(err); } }); }
-        function moPopupXemHopDong(idKhach) { const nt = tatCaNguoiThue.find(x => x.maNguoiThue == idKhach); if(!nt) return; let phong = tatCaDuLieuPhong.find(p => p.maPhong == nt.maPhong); let tenPhong = "Chưa có"; if (phong && phong.soPhong) { tenPhong = phong.soPhong.toUpperCase().startsWith("P.") ? phong.soPhong : "P." + phong.soPhong; } let ngayBD = nt.ngayBatDau ? new Date(nt.ngayBatDau).toLocaleDateString('vi-VN') : "Chưa nhập"; let ngayKT = nt.ngayKetThuc ? new Date(nt.ngayKetThuc).toLocaleDateString('vi-VN') : "Chưa nhập"; let tienC = nt.tienCoc ? formatTien(nt.tienCoc) : "0 đ"; document.getElementById('noidung-hopdong').innerHTML = `<div style="background: #fffaf0; padding: 20px; border-radius: 8px; border: 1px dashed #feebc8; margin-bottom: 15px;"><div style="display:flex; justify-content:space-between; margin-bottom: 10px;"><span style="color:#718096">Người đại diện:</span><strong style="color:#2d3748; font-size: 16px;">${nt.hoTen}</strong></div><div style="display:flex; justify-content:space-between; margin-bottom: 10px;"><span style="color:#718096">Phòng thuê:</span><strong style="color:#3182ce;">${tenPhong}</strong></div><div style="display:flex; justify-content:space-between; margin-bottom: 10px;"><span style="color:#718096">Thời hạn hợp đồng:</span><strong style="color:#38a169;">${ngayBD} - ${ngayKT}</strong></div><div style="display:flex; justify-content:space-between; margin-bottom: 10px;"><span style="color:#718096">Tiền cọc:</span><strong style="color:#e53e3e; font-size: 16px;">${tienC}</strong></div></div><div style="text-align:center; padding: 30px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;"><i class="fas fa-file-contract" style="font-size: 40px; color: #3182ce; margin-bottom: 15px;"></i><p style="color: #4a5568; margin-bottom: 15px; font-weight: 600;">Hợp đồng đã được hệ thống tự động tạo</p><button class="btn-outline" style="margin: 0 auto; color: white; background-color: #3182ce; border: none; padding: 10px 20px;" onclick="taiHopDongPDF(${nt.maNguoiThue})"><i class="fas fa-download"></i> Tải bản PDF để In</button></div>`; document.getElementById('popup-xem-hopdong').style.display = 'flex'; }
-        function taiHopDongPDF(idKhach) { const nt = tatCaNguoiThue.find(x => x.maNguoiThue == idKhach); let phong = tatCaDuLieuPhong.find(p => p.maPhong == nt.maPhong); let tenPhong = "Chưa xếp phòng"; if (phong && phong.soPhong) { tenPhong = phong.soPhong.toUpperCase().startsWith("P.") ? phong.soPhong : "P." + phong.soPhong; } let ngayBD = nt.ngayBatDau ? new Date(nt.ngayBatDau).toLocaleDateString('vi-VN') : "......."; let ngayKT = nt.ngayKetThuc ? new Date(nt.ngayKetThuc).toLocaleDateString('vi-VN') : "......."; let tienC = nt.tienCoc ? formatTien(nt.tienCoc) : "0 đ"; const templateHTML = `<div style="padding: 40px; font-family: 'Times New Roman', serif; line-height: 1.6; color: black; background: white; font-size: 15px;"><h3 style="text-align: center; margin: 0; font-size: 16px;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3><h4 style="text-align: center; margin: 5px 0 20px 0; text-decoration: underline; font-size: 16px;">Độc lập - Tự do - Hạnh phúc</h4><h2 style="text-align: center; margin-top: 40px; margin-bottom: 30px; font-size: 22px;">HỢP ĐỒNG THUÊ PHÒNG TRỌ</h2><p style="text-align:right; font-style:italic; margin-bottom: 30px;">Hôm nay, ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}</p><p><strong>BÊN CHO THUÊ (BÊN A):</strong> BQL Nhà Trọ HTT Manager</p><p>Đại diện: ................................................................ Số ĐT: .......................................</p><br><p><strong>BÊN THUÊ (BÊN B):</strong> Ông/Bà <strong>${nt.hoTen}</strong></p><p>Số điện thoại: ${nt.soDienThoai || '.......................................'} </p><p>Số CCCD: ${nt.cccd || '.......................................'}</p><br><p><strong>Hai bên cùng thỏa thuận và đồng ý ký kết hợp đồng thuê phòng với các điều khoản sau:</strong></p><p><strong>ĐIỀU 1: NỘI DUNG HỢP ĐỒNG</strong></p><p>- Bên A đồng ý cho Bên B thuê 01 phòng trọ mang mã số: <strong>${tenPhong}</strong>.</p><p>- Thời gian thuê tính từ ngày <strong>${ngayBD}</strong> đến hết ngày <strong>${ngayKT}</strong>.</p><p>- Số tiền Bên B đã đặt cọc cho Bên A là: <strong>${tienC}</strong>.</p><p><strong>ĐIỀU 2: TRÁCH NHIỆM HAI BÊN</strong></p><p>- <strong>Trách nhiệm Bên B:</strong> Thanh toán tiền thuê phòng và các chi phí dịch vụ đầy đủ và đúng hạn hàng tháng. Có ý thức giữ gìn vệ sinh chung, an ninh trật tự.</p><p>- <strong>Trách nhiệm Bên A:</strong> Bàn giao phòng đúng tình trạng thỏa thuận. Hoàn trả lại tiền cọc khi Bên B trả phòng đúng hạn hợp đồng và không làm hư hỏng tài sản.</p><p><strong>ĐIỀU 3: CAM KẾT CHUNG</strong></p><p>Hai bên cam kết thực hiện đúng các điều khoản đã ghi trong hợp đồng. Nếu có tranh chấp sẽ thương lượng giải quyết.</p><p>Hợp đồng được lập thành 02 bản, mỗi bên giữ 01 bản có giá trị pháp lý như nhau.</p><div style="display: flex; justify-content: space-between; text-align: center; margin-top: 50px;"><div style="width: 40%;"><strong>ĐẠI DIỆN BÊN B</strong><br><i style="font-size:13px;">(Ký và ghi rõ họ tên)</i></div><div style="width: 40%;"><strong>ĐẠI DIỆN BÊN A</strong><br><i style="font-size:13px;">(Ký và ghi rõ họ tên)</i></div></div></div>`; var opt = { margin: 10, filename: 'HopDong_' + tenPhong + '_' + nt.hoTen.replace(/\s+/g, '') + '.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }; html2pdf().set(opt).from(templateHTML).save(); }
-        function moPopupThemNguoiThue() { document.getElementById('popup-nt-title').innerHTML=`<i class="fas fa-user-plus"></i> Thêm Khách & Hợp Đồng`; document.getElementById('in-nt-ten').value=""; document.getElementById('in-nt-phong-text').value=""; document.getElementById('in-nt-ngaybatdau').value=""; document.getElementById('in-nt-ngayketthuc').value=""; document.getElementById('in-nt-tiencoc').value=""; document.getElementById('container-nguoi-oghep').innerHTML=""; cheDoNguoiThue='them'; document.getElementById('popup-nguoi-thue').style.display='flex'; }
-        function moPopupSuaNguoiThue(idKhach) { const nt = tatCaNguoiThue.find(x => x.maNguoiThue == idKhach); if(!nt) return; cheDoNguoiThue = 'sua'; currentIdNguoiThue_Sua = idKhach; document.getElementById('popup-nt-title').innerHTML = `<i class="fas fa-user-edit"></i> Sửa Thông Tin Khách`; document.getElementById('in-nt-ten').value = nt.hoTen; document.getElementById('in-nt-sdt').value = nt.soDienThoai; document.getElementById('in-nt-cccd').value = nt.cccd; let phong = tatCaDuLieuPhong.find(p => p.maPhong == nt.maPhong); document.getElementById('in-nt-phong-text').value = phong ? (phong.soPhong.toUpperCase().startsWith("P.") ? phong.soPhong : "P." + phong.soPhong) : ''; document.getElementById('in-nt-ngaybatdau').value = nt.ngayBatDau ? nt.ngayBatDau.split('T')[0] : ""; document.getElementById('in-nt-ngayketthuc').value = nt.ngayKetThuc ? nt.ngayKetThuc.split('T')[0] : ""; document.getElementById('in-nt-tiencoc').value = nt.tienCoc || ""; document.getElementById('container-nguoi-oghep').innerHTML = ""; if(nt.nguoiOGhep) { try { let dsOghep = JSON.parse(nt.nguoiOGhep); if(Array.isArray(dsOghep)) dsOghep.forEach(og => themDongNguoiOGhep(og.ten, og.sdt, og.cccd)); } catch(e) {} } document.getElementById('popup-nguoi-thue').style.display = 'flex'; }
-        function themDongNguoiOGhep(ten = '', sdt = '', cccd = '') { const idDocNhat = 'og_' + Date.now(); const htmlMoi = `<div class="dong-oghep" id="${idDocNhat}"><input type="text" class="og-ten" placeholder="Họ Tên" value="${ten}"><input type="text" class="og-sdt" placeholder="SĐT" value="${sdt}"><input type="text" class="og-cccd" placeholder="CCCD" value="${cccd}"><button type="button" class="btn-remove-oghep" title="Xóa người này" onclick="this.parentElement.remove()"><i class="fas fa-trash-alt"></i></button></div>`; document.getElementById('container-nguoi-oghep').insertAdjacentHTML('beforeend', htmlMoi); }
-        async function xuLyLuuNguoiThue() { const tenPhongNhapVao = document.getElementById('in-nt-phong-text').value.trim().toUpperCase(); let phongTimThay = tatCaDuLieuPhong.find(p => p.soPhong.toUpperCase().replace('P.','') === tenPhongNhapVao.replace('P.','')); if(!phongTimThay) return alert("Phòng không tồn tại trong hệ thống!"); let og = []; document.querySelectorAll('.dong-oghep').forEach(d => { let t = d.querySelector('.og-ten').value; if(t) og.push({ten:t, sdt:d.querySelector('.og-sdt').value, cccd:d.querySelector('.og-cccd').value}); }); const data = { hoTen: document.getElementById('in-nt-ten').value, soDienThoai: document.getElementById('in-nt-sdt').value, cccd: document.getElementById('in-nt-cccd').value, nguoiOGhep: JSON.stringify(og), maPhong: phongTimThay.maPhong, ngayBatDau: document.getElementById('in-nt-ngaybatdau').value || null, ngayKetThuc: document.getElementById('in-nt-ngayketthuc').value || null, tienCoc: document.getElementById('in-nt-tiencoc').value ? Number(document.getElementById('in-nt-tiencoc').value) : 0 }; try { if (cheDoNguoiThue === 'them') { await fetch(API_NGUOITHUE, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) }); } else { await fetch(`${API_NGUOITHUE}/${currentIdNguoiThue_Sua}`, { method: 'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) }); } dongTatCaPopup(); loadDuLieuTuSQL(); } catch(e) { alert("Lỗi lưu xuống Database C#"); } }
-
-        // ==============================================================
-        // KHU VỰC: HÓA ĐƠN & THANH TOÁN
-        // ==============================================================
-        function locTimKiemHoaDon() { const t = document.getElementById('searchHoaDon').value.toLowerCase(); veBangHoaDon(tatCaHoaDon.filter(hd => hd.thangNam.includes(t) || (hd.soPhong && hd.soPhong.toLowerCase().includes(t)))); }
-        function veBangHoaDon(ds) { const b = document.getElementById("bang-hoa-don"); b.innerHTML = ""; if(ds.length === 0) { b.innerHTML = `<tr><td colspan="8" class="text-center" style="padding:30px;">Chưa có hóa đơn</td></tr>`; return; } ds.forEach(hd => { let soDien = hd.soDienMoi - hd.soDienCu; let soNuoc = hd.soNuocMoi - hd.soNuocCu; let tongTien = hd.giaThue + (soDien * hd.donGiaDien) + (soNuoc * hd.donGiaNuoc); let badge = hd.trangThai === "Đã đóng" ? "success" : "danger"; let btnThanhToan = hd.trangThai === "Chưa đóng" ? `<button class="row-action-btn" title="Xác nhận khách đã nộp tiền" onclick="xacNhanThanhToan(${hd.maHoaDon})" style="color:#38a169; border-color:#c6f6d5; background:#f0fff4;"><i class="fas fa-check-double"></i></button>` : `<button class="row-action-btn" title="In Biên Lai" onclick="inBienLaiPDF(${hd.maHoaDon})" style="color:#3182ce; border-color:#bee3f8; background:#ebf8ff;"><i class="fas fa-print"></i></button>`; let tenP = hd.soPhong ? (hd.soPhong.toUpperCase().startsWith("P.") ? hd.soPhong : "P." + hd.soPhong) : "Trống"; b.innerHTML += `<tr><td class="text-center" style="font-size:13px; color:#718096">#HD${hd.maHoaDon}</td><td class="text-center"><strong style="color:#2d3748">${tenP}</strong></td><td class="text-center" style="font-weight:600; color:#4a5568">${hd.thangNam}</td><td class="text-center"><div style="font-size:11px;color:#a0aec0;">${hd.soDienMoi}-${hd.soDienCu} = ${soDien}</div><div style="color:#dd6b20;font-weight:700;"><i class="fas fa-bolt"></i> ${formatTien(soDien*hd.donGiaDien)}</div></td><td class="text-center"><div style="font-size:11px;color:#a0aec0;">${hd.soNuocMoi}-${hd.soNuocCu} = ${soNuoc}</div><div style="color:#3182ce;font-weight:700;"><i class="fas fa-tint"></i> ${formatTien(soNuoc*hd.donGiaNuoc)}</div></td><td class="text-right"><div style="font-size:11px;color:#a0aec0;">Phòng: ${formatTien(hd.giaThue)}</div><div class="col-price" style="font-size:16px; font-weight:700;">${formatTien(tongTien)}</div></td><td class="text-center"><span class="badge-status ${badge}">${hd.trangThai}</span></td><td class="text-center" style="display:flex; justify-content:center; align-items:center; height: 100%;">${btnThanhToan}<button class="row-action-btn btn-row-delete" onclick="moPopupConfirmXoa(${hd.maHoaDon}, 'hoadon')"><i class="fas fa-trash"></i></button></td></tr>`; }); }
-        function moPopupHoaDon() { let date = new Date(); document.getElementById('hd-thang').value = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getFullYear(); document.getElementById('hd-phong-select').value = ""; document.getElementById('hd-dien-cu').value = ""; document.getElementById('hd-dien-moi').value = ""; document.getElementById('hd-nuoc-cu').value = ""; document.getElementById('hd-nuoc-moi').value = ""; document.getElementById('popup-hoadon').style.display='flex'; }
-        async function xuLyLuuHoaDon() { const maPhong = document.getElementById('hd-phong-select').value; if(!maPhong) return alert("Vui lòng chọn phòng để tính tiền!"); const hdData = { maPhong: Number(maPhong), thangNam: document.getElementById('hd-thang').value, soDienCu: Number(document.getElementById('hd-dien-cu').value), soDienMoi: Number(document.getElementById('hd-dien-moi').value), soNuocCu: Number(document.getElementById('hd-nuoc-cu').value), soNuocMoi: Number(document.getElementById('hd-nuoc-moi').value) }; if(!hdData.thangNam || hdData.soDienMoi <= hdData.soDienCu || hdData.soNuocMoi <= hdData.soNuocCu) { return alert("Lỗi: Số Mới phải lớn hơn Số Cũ!"); } try { await fetch(API_HOADON, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(hdData) }); dongTatCaPopup(); loadDuLieuTuSQL(); } catch(e) { alert("Lỗi khi lưu hóa đơn lên máy chủ!"); } }
-        async function xacNhanThanhToan(idHoaDon) { if(confirm("Xác nhận phòng này ĐÃ ĐÓNG TIỀN đầy đủ?")) { try { await fetch(`${API_HOADON}/thanhtoan/${idHoaDon}`, { method: 'PUT' }); loadDuLieuTuSQL(); } catch(e) { alert("Lỗi hệ thống khi cập nhật thanh toán!"); } } }
-        function inBienLaiPDF(idHoaDon) { const hd = tatCaHoaDon.find(x => x.maHoaDon == idHoaDon); if(!hd) return; let soDien = hd.soDienMoi - hd.soDienCu; let soNuoc = hd.soNuocMoi - hd.soNuocCu; let tongTien = hd.giaThue + (soDien * hd.donGiaDien) + (soNuoc * hd.donGiaNuoc); let tenP = hd.soPhong ? (hd.soPhong.toUpperCase().startsWith("P.") ? hd.soPhong : "P." + hd.soPhong) : ""; const htmlBill = `<div style="background: white; padding: 25px; border: 2px dashed #cbd5e0; border-radius: 8px;"><div style="text-align:center; border-bottom: 2px solid #2d3748; padding-bottom: 15px; margin-bottom: 20px;"><h2 style="margin: 0; color: #2d3748; font-size: 22px;">BIÊN LAI THU TIỀN PHÒNG</h2><p style="margin: 5px 0 0 0; color: #718096; font-size: 14px;">Tháng: <strong>${hd.thangNam}</strong></p></div><div style="display:flex; justify-content:space-between; margin-bottom: 10px; font-size: 15px;"><span>Phòng:</span> <strong style="color: #3182ce; font-size: 18px;">${tenP}</strong></div><div style="display:flex; justify-content:space-between; margin-bottom: 20px; font-size: 15px;"><span>Mã hóa đơn:</span> <strong>#HD${hd.maHoaDon}</strong></div><table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; box-shadow: none;"><tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 10px 0; color:#4a5568">Tiền phòng gốc:</td><td style="padding: 10px 0; text-align:right; font-weight:600;">${formatTien(hd.giaThue)}</td></tr><tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 10px 0; color:#4a5568">Tiền Điện (${soDien} số x ${hd.donGiaDien}):</td><td style="padding: 10px 0; text-align:right; font-weight:600;">${formatTien(soDien * hd.donGiaDien)}</td></tr><tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 10px 0; color:#4a5568">Tiền Nước (${soNuoc} khối x ${hd.donGiaNuoc}):</td><td style="padding: 10px 0; text-align:right; font-weight:600;">${formatTien(soNuoc * hd.donGiaNuoc)}</td></tr></table><div style="background: #f0fff4; border: 1px solid #c6f6d5; padding: 15px; border-radius: 8px; text-align:center;"><span style="color: #2f855a; font-size: 14px; font-weight: 600; text-transform: uppercase;">Đã Thu Đủ TỔng Cộng</span><h1 style="color: #2d3748; margin: 5px 0 0 0; font-size: 26px;">${formatTien(tongTien)}</h1></div><p style="text-align:center; color: #a0aec0; font-size: 12px; margin-top: 20px; font-style: italic;">Cảm ơn quý khách đã thanh toán đúng hạn!</p></div>`; document.getElementById('noidung-in-hoadon').innerHTML = htmlBill + `<button class="btn-add-room" style="background:#3182ce; width: 100%; justify-content: center; margin-top: 20px; padding: 12px; font-size: 16px;" onclick="thucHienXuatPDF('Biên_Lai_${tenP}_${hd.thangNam.replace('/','-')}.pdf')"><i class="fas fa-download"></i> Lưu File Biên Lai (PDF) để gửi Khách</button>`; document.getElementById('popup-xem-hoadon').style.display = 'flex'; }
-        function thucHienXuatPDF(fileName) { const element = document.getElementById('noidung-in-hoadon').firstElementChild; var opt = { margin: 10, filename: fileName, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' } }; html2pdf().set(opt).from(element).save(); }
-
-        // ==============================================================
-        // KHU VỰC: CHỈ SỐ ĐIỆN NƯỚC (CHỐT SỔ HÀNG LOẠT)
-        // ==============================================================
-        function veBangDienNuoc() {
-            const b = document.getElementById("tbody-dien-nuoc"); b.innerHTML = "";
-            let cacPhongDangThue = tatCaDuLieuPhong.filter(p => p.trangThai === "Đã thuê");
-            if (cacPhongDangThue.length === 0) { b.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:40px;">Hiện tại chưa có phòng nào được thuê.</td></tr>`; return; }
-            cacPhongDangThue.forEach(p => {
-                let tenP = p.soPhong.toUpperCase().startsWith("P.") ? p.soPhong : "P." + p.soPhong;
-                b.innerHTML += `<tr class="row-dien-nuoc" data-maphong="${p.maPhong}"><td class="text-center"><strong style="color:#2d3748; font-size: 16px;">${tenP}</strong></td><td><input type="number" class="in-dien-cu" value="0"></td><td><input type="number" class="in-dien-moi" value="0"></td><td><input type="number" class="in-nuoc-cu" value="0"></td><td><input type="number" class="in-nuoc-moi" value="0"></td></tr>`;
-            });
-            let date = new Date(); document.getElementById('dn-thang').value = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getFullYear();
-        }
-        async function chotSoHangLoat() {
-            const thangNam = document.getElementById('dn-thang').value.trim();
-            if(!thangNam) return alert("Vui lòng nhập Tháng/Năm trước khi chốt sổ!");
-            const rows = document.querySelectorAll('.row-dien-nuoc'); let danhSachHoaDonMoi = []; let coLoiNhapLieu = false;
-            rows.forEach(r => {
-                let maP = r.getAttribute('data-maphong'); let dCu = Number(r.querySelector('.in-dien-cu').value); let dMoi = Number(r.querySelector('.in-dien-moi').value); let nCu = Number(r.querySelector('.in-nuoc-cu').value); let nMoi = Number(r.querySelector('.in-nuoc-moi').value);
-                if(dMoi > 0 || nMoi > 0) { if(dMoi < dCu || nMoi < nCu) { coLoiNhapLieu = true; } else { danhSachHoaDonMoi.push({ maPhong: Number(maP), thangNam: thangNam, soDienCu: dCu, soDienMoi: dMoi, soNuocCu: nCu, soNuocMoi: nMoi }); } }
-            });
-            if(coLoiNhapLieu) return alert("Cảnh báo: Có phòng bạn nhập Số Mới nhỏ hơn Số Cũ. Vui lòng kiểm tra lại!");
-            if(danhSachHoaDonMoi.length === 0) return alert("Chưa có dữ liệu hợp lệ nào được nhập để chốt sổ!");
-            if(confirm(`Bạn chuẩn bị tạo Hóa đơn đồng loạt cho ${danhSachHoaDonMoi.length} phòng.\nXác nhận chốt sổ?`)) {
-                try { for (let hd of danhSachHoaDonMoi) { await fetch(API_HOADON, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(hd) }); } alert("Chốt sổ điện nước hàng loạt THÀNH CÔNG!"); loadDuLieuTuSQL(); chuyenTab('tab-hoadon', document.querySelectorAll('.menu-item')[3], 'Hóa Đơn & Thanh Toán'); } catch(e) { alert("Có lỗi kết nối trong quá trình tạo hóa đơn hàng loạt!"); }
-            }
-        }
-
-        // ==============================================================
-        // KHU VỰC: YÊU CẦU HỖ TRỢ
-        // ==============================================================
-        function veBangYeuCau(ds) { 
-            const b = document.getElementById("bang-yeu-cau"); b.innerHTML = ""; 
-            if(ds.length === 0) { b.innerHTML = `<tr><td colspan="6" class="text-center" style="padding:30px; color:#a0aec0;">Chưa có yêu cầu hỗ trợ nào</td></tr>`; return; }
-            ds.forEach((yc, i) => { 
-                let badge = yc.trangThai === "Đã xong" ? "success" : "pending";
-                let tenP = yc.soPhong ? (yc.soPhong.toUpperCase().startsWith("P.") ? yc.soPhong : "P." + yc.soPhong) : "Phòng trống";
-                let ngayG = yc.ngayGui ? new Date(yc.ngayGui).toLocaleDateString('vi-VN') : "Không rõ";
-                let btnHoanThanh = yc.trangThai !== "Đã xong" ? `<button class="row-action-btn" title="Đánh dấu đã xử lý xong" onclick="xacNhanYeuCau(${yc.maYeuCau})" style="color:#38a169; border-color:#c6f6d5; background:#f0fff4;"><i class="fas fa-check"></i></button>` : ``;
-                b.innerHTML += `<tr><td class="text-center">${i+1}</td><td class="text-center"><strong style="color:#3182ce;">${tenP}</strong></td><td style="color:#4a5568;">${yc.noiDung}</td><td class="text-center" style="color:#718096; font-size: 13px;">${ngayG}</td><td class="text-center"><span class="badge-status ${badge}">${yc.trangThai}</span></td><td class="text-center">${btnHoanThanh}<button class="row-action-btn btn-row-delete" title="Xóa yêu cầu" onclick="moPopupConfirmXoa(${yc.maYeuCau}, 'yeucau')"><i class="fas fa-trash"></i></button></td></tr>`; 
-            }); 
-        }
-        async function xacNhanYeuCau(id) { if(confirm("Xác nhận bạn ĐÃ SỬA CHỮA XONG yêu cầu này?")) { try { await fetch(`${API_YEUCAU}/hoanthanh/${id}`, { method: 'PUT' }); loadDuLieuTuSQL(); } catch(e) { alert("Lỗi hệ thống khi cập nhật trạng thái!"); } } }
-
-
-        // ==============================================================
-        // KHU VỰC MỚI: XỬ LÝ LƯU CÀI ĐẶT HỆ THỐNG
-        // ==============================================================
-        async function xuLyLuuCaiDat() {
-            const data = {
-                giaDien: Number(document.getElementById('cd-gia-dien').value),
-                giaNuoc: Number(document.getElementById('cd-gia-nuoc').value),
-                nganHang: document.getElementById('cd-ngan-hang').value.trim(),
-                tenChuTaiKhoan: document.getElementById('cd-ten-tk').value.trim(),
-                soTaiKhoan: document.getElementById('cd-stk').value.trim()
-            };
-
-            if (data.giaDien <= 0 || data.giaNuoc <= 0) {
-                return alert("Giá điện và giá nước phải lớn hơn 0!");
-            }
+                const datalist = document.getElementById('danh-sach-phong-datalist'); datalist.innerHTML = "";
+                tatCaDuLieuPhong.forEach(p => { let tenP = p.soPhong.toUpperCase().startsWith("P.") ? p.soPhong : "P." + p.soPhong; datalist.innerHTML += `<option value="${tenP}">`; });
+            } catch (error) { console.error("Lỗi API Phòng/Người Thuê:", error); }
 
             try {
-                await fetch(API_CAIDAT, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(data) 
-                });
-                alert("🎉 Đã lưu Cài Đặt Hệ Thống thành công!");
-            } catch(e) {
-                alert("Lỗi khi lưu cài đặt vào Database!");
-            }
+                const resHD = await fetch(API_HOADON); 
+                if(resHD.ok) { 
+                    tatCaHoaDon = await resHD.json(); 
+                    veBangHoaDon(tatCaHoaDon); 
+                    tinhToanDoanhThu(); 
+                }
+            } catch(e) { console.error("Chưa có API Hóa Đơn"); }
+
+            try {
+                const resYC = await fetch(API_YEUCAU); 
+                if(resYC.ok) { tatCaYeuCau = await resYC.json(); veBangYeuCau(tatCaYeuCau); }
+            } catch(e) { console.error("Chưa có API Yêu Cầu"); }
+
+            try {
+                const resMK = await fetch(API_QUENMK); 
+                if(resMK.ok) {
+                    const dsQuenMK = await resMK.json();
+                    const tbodyMK = document.getElementById("bang-quen-mk"); tbodyMK.innerHTML = "";
+                    dsQuenMK.forEach(mk => { 
+                        let tenP = mk.tenPhong.trim().toUpperCase(); if (!tenP.startsWith("P.")) tenP = tenP.startsWith("P") ? "P." + tenP.substring(1) : "P." + tenP;
+                        tbodyMK.innerHTML += `<tr><td>#YC${mk.maYeuCau}</td><td class="text-center"><strong>${tenP}</strong></td><td class="text-center">${mk.soDienThoai}</td><td>${mk.email}</td><td class="text-center"><span class="badge-status pending">Chờ cấp</span></td><td class="text-center"><button class="row-action-btn" title="Đã giải quyết" onclick="xoaYeuCauMK(${mk.maYeuCau})"><i class="fas fa-check" style="color:#38a169"></i></button></td></tr>`; 
+                    });
+                }
+            } catch(e) { console.error("Chưa có API Quên MK"); }
         }
 
+        // ==========================================
+        // MODULE: XUẤT HỢP ĐỒNG PDF (MỚI)
+        // ==========================================
+        function inHopDong(idKhach) {
+            const khach = tatCaNguoiThue.find(x => x.maNguoiThue == idKhach);
+            if(!khach) return alert("Lỗi: Không tìm thấy dữ liệu khách thuê!");
 
-        // ==============================================================
-        // KHU VỰC: CÁC TIỆN ÍCH CHUNG & XÓA DỮ LIỆU
-        // ==============================================================
+            const phong = tatCaDuLieuPhong.find(p => p.maPhong == khach.maPhong);
+            let tenPhong = "P.---";
+            let giaPhong = "0 đ";
+            if(phong) {
+                tenPhong = phong.soPhong.toUpperCase().startsWith("P.") ? phong.soPhong.toUpperCase() : "P." + phong.soPhong.toUpperCase();
+                giaPhong = formatTien(phong.giaThue);
+            }
+
+            // Gắn dữ liệu vào template HTML ẩn
+            const today = new Date();
+            document.getElementById('hd-ngay').innerText = today.getDate().toString().padStart(2, '0');
+            document.getElementById('hd-thang').innerText = (today.getMonth() + 1).toString().padStart(2, '0');
+            document.getElementById('hd-nam').innerText = today.getFullYear();
+            
+            document.getElementById('hd-ten-khach').innerText = khach.hoTen.toUpperCase();
+            document.getElementById('hd-ky-ten-b').innerText = khach.hoTen;
+            document.getElementById('hd-cccd').innerText = khach.cccd || ".........................";
+            document.getElementById('hd-sdt').innerText = khach.soDienThoai || ".........................";
+            
+            document.getElementById('hd-so-phong').innerText = tenPhong;
+            document.getElementById('hd-gia-phong').innerText = giaPhong;
+
+            // Lấy khối HTML để xuất PDF
+            const element = document.getElementById('mau-hop-dong');
+            
+            alert(`⏳ Đang tạo Hợp đồng cho phòng ${tenPhong}. Vui lòng đợi vài giây...`);
+
+            const opt = {
+                margin:       0.8,
+                filename:     `Hop_Dong_Thue_Phong_${tenPhong}_${khach.hoTen.replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Chạy lệnh tải PDF xuống máy
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // ==========================================
+        // MODULE: BÁO CÁO DOANH THU
+        // ==========================================
+        function tinhToanDoanhThu() {
+            let tongThucThu = 0, tongDangNo = 0, dtThangNay = 0;
+            let date = new Date();
+            let thangHienTai = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getFullYear();
+            let thongKeThang = {};
+
+            tatCaHoaDon.forEach(hd => {
+                let soDien = hd.soDienMoi - hd.soDienCu;
+                let soNuoc = hd.soNuocMoi - hd.soNuocCu;
+                let tongTienHD = hd.giaThue + (soDien * hd.donGiaDien) + (soNuoc * hd.donGiaNuoc);
+
+                if (!thongKeThang[hd.thangNam]) thongKeThang[hd.thangNam] = { tongHD: 0, daThu: 0, chuaThu: 0 };
+                thongKeThang[hd.thangNam].tongHD += tongTienHD;
+
+                if (hd.trangThai === "Đã đóng") {
+                    tongThucThu += tongTienHD;
+                    thongKeThang[hd.thangNam].daThu += tongTienHD;
+                    if (hd.thangNam === thangHienTai) dtThangNay += tongTienHD;
+                } else {
+                    tongDangNo += tongTienHD;
+                    thongKeThang[hd.thangNam].chuaThu += tongTienHD;
+                }
+            });
+
+            document.getElementById("dt-thucthu").innerText = formatTien(tongThucThu);
+            document.getElementById("dt-dangno").innerText = formatTien(tongDangNo);
+            document.getElementById("dt-thangnay").innerText = formatTien(dtThangNay);
+
+            let tbody = document.getElementById("bang-doanh-thu"); tbody.innerHTML = "";
+            
+            let cacThang = Object.keys(thongKeThang).sort((a, b) => {
+                let [mA, yA] = a.split('/'); let [mB, yB] = b.split('/');
+                return new Date(yB, mB - 1) - new Date(yA, mA - 1);
+            });
+
+            if(cacThang.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 40px; color: #a0aec0;">Chưa có dữ liệu hóa đơn nào để thống kê doanh thu.</td></tr>`;
+                return;
+            }
+
+            cacThang.forEach(thang => {
+                let d = thongKeThang[thang];
+                let phanTram = d.tongHD > 0 ? Math.round((d.daThu / d.tongHD) * 100) : 0;
+                let mauTienDo = phanTram === 100 ? '#38a169' : (phanTram > 0 ? '#dd6b20' : '#e53e3e');
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-center"><strong>Tháng ${thang}</strong></td>
+                        <td class="text-right" style="color:#4a5568; font-weight:600;">${formatTien(d.tongHD)}</td>
+                        <td class="text-right" style="color:#38a169; font-weight:bold">${formatTien(d.daThu)}</td>
+                        <td class="text-right" style="color:#e53e3e; font-weight:bold">${formatTien(d.chuaThu)}</td>
+                        <td class="text-center">
+                            <div style="background: #edf2f7; border-radius: 10px; height: 8px; width: 100px; margin: 0 auto; overflow: hidden; position: relative;">
+                                <div style="background: ${mauTienDo}; height: 100%; width: ${phanTram}%;"></div>
+                            </div>
+                            <div style="font-size:11px; color:#718096; margin-top:4px; font-weight:600;">Đã thu ${phanTram}%</div>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        // ==========================================
+        // MODULE: PHÒNG TRỌ
+        // ==========================================
+        function xuLyLocDuLieu() {
+            const tuKhoa = document.getElementById('searchRoom').value.toLowerCase();
+            const trangThaiLoc = document.getElementById('filterStatus').value;
+            const duLieuDaLoc = tatCaDuLieuPhong.filter(p => { return p.soPhong.toLowerCase().includes(tuKhoa) && ((trangThaiLoc === 'all') || (p.trangThai === trangThaiLoc)); });
+            veBangDuLieu(duLieuDaLoc);
+        }
+
+        function veBangDuLieu(danhSach) {
+            const tbody = document.getElementById("bang-du-lieu-phong"); tbody.innerHTML = ""; 
+            if(danhSach.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 40px; color: #a0aec0;">Không tìm thấy phòng phù hợp!</td></tr>`; return; }
+            danhSach.forEach((p, index) => {
+                let statusBadgeClass = p.trangThai === "Trống" ? "empty" : "rented";
+                let formatTenPhong = p.soPhong.trim().toUpperCase(); if (!formatTenPhong.startsWith("P.")) formatTenPhong = "P." + formatTenPhong;
+                tbody.innerHTML += `<tr><td class="text-center">${index + 1}</td><td class="text-center"><strong>${formatTenPhong}</strong></td><td class="text-right col-price">${new Intl.NumberFormat('vi-VN').format(p.giaThue)} đ</td><td class="text-center"><span class="badge-status ${statusBadgeClass}">${p.trangThai}</span></td><td class="text-center"><button class="row-action-btn" title="Hồ sơ phòng" onclick="moPopupChiTiet(${p.maPhong}, '${formatTenPhong}', ${p.giaThue}, '${p.trangThai}')"><i class="fas fa-eye" style="color:#805ad5"></i></button><button class="row-action-btn" title="Tính tiền" onclick="moPopupHoaDon(${p.maPhong}, '${formatTenPhong}')"><i class="fas fa-bolt" style="color:#dd6b20"></i></button><button class="row-action-btn" title="Sửa" onclick="moPopupSua(${p.maPhong}, '${formatTenPhong}', ${p.giaThue}, '${p.trangThai}')"><i class="fas fa-pen" style="color:#3182ce"></i></button><button class="row-action-btn btn-row-delete" title="Xóa" onclick="moPopupConfirmXoa(${p.maPhong}, 'phong')"><i class="fas fa-trash"></i></button></td></tr>`; 
+            }); 
+        }
+
+        async function xuLyLuuPhong() { 
+            const pData = { soPhong: document.getElementById('in-so-phong').value.trim(), giaThue: Number(document.getElementById('in-gia-thue').value), trangThai: document.getElementById('in-trang-thai').value }; 
+            if (!pData.soPhong || !pData.giaThue) return alert("Nhập đủ thông tin phòng!"); 
+            if (cheDoHienTai === 'them') await fetch(API_PHONG, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pData) }); 
+            else await fetch(`${API_PHONG}/${currentIdPhong_Sua}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pData) }); 
+            dongTatCaPopup(); loadDuLieuTuSQL(); 
+        }
+
+        function moPopupThem() { cheDoHienTai = 'them'; document.getElementById('popup-title').innerText = "Thêm Phòng Mới"; document.getElementById('in-so-phong').value = ""; document.getElementById('in-gia-thue').value = ""; document.getElementById('in-trang-thai').value = "Trống"; document.getElementById('khu-vuc-doi-tt').style.display = 'none'; document.getElementById('popup-nhap-lieu').style.display = 'flex'; }
+        function moPopupSua(id, so, gia, tt) { cheDoHienTai = 'sua'; currentIdPhong_Sua = id; document.getElementById('popup-title').innerText = "Sửa Thông Tin: " + so; document.getElementById('in-so-phong').value = so; document.getElementById('in-gia-thue').value = gia; document.getElementById('in-trang-thai').value = tt; document.getElementById('khu-vuc-doi-tt').style.display = 'block'; document.getElementById('popup-nhap-lieu').style.display = 'flex'; }
+
+        function moPopupChiTiet(maPhong, tenPhong, giaThue, trangThai) { 
+            document.getElementById('hs-ten-phong').innerText = tenPhong; 
+            const khuVucHienThi = document.getElementById('khu-vuc-hoso-noidung'); 
+            let khachThue = tatCaNguoiThue.find(nt => nt.maPhong === maPhong); 
+            
+            if (trangThai === "Trống" || !khachThue) { 
+                khuVucHienThi.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-door-open" style="font-size: 50px; color: #cbd5e0; margin-bottom: 20px;"></i><h3 style="color: #4a5568;">Phòng này hiện đang trống!</h3><p style="color: #718096; margin-top: 10px;">Chưa có dữ liệu người thuê và hóa đơn.</p></div>`; 
+            } else { 
+                let hoaDonMoiNhat = tatCaHoaDon.find(hd => hd.maPhong === maPhong); 
+                let dienCu = 0, dienMoi = 0, soDien = 0, nuocCu = 0, nuocMoi = 0, soNuoc = 0, giaDien = 3000, giaNuoc = 15000, tienDien = 0, tienNuoc = 0, tongCong = giaThue; 
+                if(hoaDonMoiNhat) { 
+                    dienCu = hoaDonMoiNhat.soDienCu; dienMoi = hoaDonMoiNhat.soDienMoi; soDien = dienMoi - dienCu; 
+                    nuocCu = hoaDonMoiNhat.soNuocCu; nuocMoi = hoaDonMoiNhat.soNuocMoi; soNuoc = nuocMoi - nuocCu; 
+                    giaDien = hoaDonMoiNhat.donGiaDien; giaNuoc = hoaDonMoiNhat.donGiaNuoc; 
+                    tienDien = soDien * giaDien; tienNuoc = soNuoc * giaNuoc; tongCong = giaThue + tienDien + tienNuoc; 
+                } 
+                
+                let tableOGhep = ""; 
+                if(khachThue.nguoiOGhep) { 
+                    try { 
+                        let dsOghep = JSON.parse(khachThue.nguoiOGhep); 
+                        if(Array.isArray(dsOghep) && dsOghep.length > 0) { 
+                            dsOghep.forEach(og => { tableOGhep += `<tr><td><strong>${og.ten}</strong></td><td>${og.sdt || '-'}</td><td>${og.cccd || '-'}</td></tr>`; }); 
+                        } else { tableOGhep = `<tr><td colspan="3" style="text-align:center; color:#a0aec0;">Chưa có người ở ghép</td></tr>`; } 
+                    } catch(e) { tableOGhep = `<tr><td colspan="3" style="text-align:center; color:#a0aec0;">Chưa có người ở ghép</td></tr>`; } 
+                } else { tableOGhep = `<tr><td colspan="3" style="text-align:center; color:#a0aec0;">Chưa có người ở ghép</td></tr>`; } 
+                
+                khuVucHienThi.innerHTML = `<div class="profile-grid"><div class="profile-card"><h4><i class="fas fa-user-tie" style="color: #38a169;"></i> Đại Diện Thuê (Chủ HĐ)</h4><div class="info-row"><span class="lbl">Họ và tên:</span> <span class="val">${khachThue.hoTen}</span></div><div class="info-row"><span class="lbl">SĐT liên hệ:</span> <span class="val">${khachThue.soDienThoai || '(Chưa nhập)'}</span></div><div class="info-row"><span class="lbl">Số CCCD:</span> <span class="val">${khachThue.cccd || '(Chưa nhập)'}</span></div><div style="margin: 15px 0; border-top: 1px dashed #e2e8f0;"></div><div class="info-row"><span class="lbl">Tiền phòng gốc:</span> <span class="val" style="color:#dd6b20">${formatTien(giaThue)}</span></div></div><div class="profile-card blue-top"><h4><i class="fas fa-file-invoice-dollar" style="color: #3182ce;"></i> Chỉ số tháng gần nhất</h4>${hoaDonMoiNhat ? `<div class="calc-row"><div style="display:flex; justify-content:space-between; font-weight:600;"><span><i class="fas fa-bolt" style="color:#dd6b20"></i> Điện</span><span>${soDien} số</span></div><div class="math">Mới: ${dienMoi} - Cũ: ${dienCu}</div><div class="money" style="text-align: right;">${formatTien(tienDien)}</div></div><div class="calc-row"><div style="display:flex; justify-content:space-between; font-weight:600;"><span><i class="fas fa-tint" style="color:#3182ce"></i> Nước</span><span>${soNuoc} khối</span></div><div class="math">Mới: ${nuocMoi} - Cũ: ${nuocCu}</div><div class="money" style="text-align: right;">${formatTien(tienNuoc)}</div></div><div class="info-row" style="margin-top: 15px; border-top: 2px solid #e2e8f0; padding-top: 10px;"><span class="lbl" style="font-size: 16px; font-weight:bold; color: #2d3748;">TỔNG CỘNG:</span> <span class="val" style="font-size: 20px; color: #e53e3e;">${formatTien(tongCong)}</span></div>` : `<p style="text-align:center; color:#718096; margin-top: 30px;">Phòng này chưa được tính hóa đơn tháng nào.</p>`}</div></div><div class="profile-card" style="border-top-color: #9f7aea;"><h4><i class="fas fa-users" style="color: #9f7aea;"></i> Danh sách người ở ghép (Cùng phòng)</h4><table style="box-shadow: none; border: 1px solid #e2e8f0; margin-bottom: 0;"><thead><tr><th>Họ và Tên</th><th>Số Điện Thoại</th><th>Số CCCD</th></tr></thead><tbody>${tableOGhep}</tbody></table></div>`; 
+            } 
+            document.getElementById('popup-ho-so-phong').style.display = 'flex'; 
+        }
+
+        // ==========================================
+        // MODULE: NGƯỜI THUÊ & HỢP ĐỒNG
+        // ==========================================
+        function locTimKiemNguoiThue() {
+            const tuKhoa = document.getElementById('searchNguoiThue').value.toLowerCase();
+            const ketQua = tatCaNguoiThue.filter(nt => nt.hoTen.toLowerCase().includes(tuKhoa) || (nt.soDienThoai && nt.soDienThoai.includes(tuKhoa)) || (nt.nguoiOGhep && nt.nguoiOGhep.toLowerCase().includes(tuKhoa)));
+            veBangNguoiThue(ketQua);
+        }
+
+        function veBangNguoiThue(danhSach) {
+            const tbody = document.getElementById("bang-nguoi-thue"); tbody.innerHTML = ""; 
+            if(danhSach.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 30px; color: #a0aec0;">Chưa có khách thuê nào.</td></tr>`; return; } 
+            
+            danhSach.forEach((nt, index) => { 
+                let phongCuaKhach = tatCaDuLieuPhong.find(p => p.maPhong == nt.maPhong); 
+                let tenPhong = phongCuaKhach ? (phongCuaKhach.soPhong.toUpperCase().startsWith("P.") ? phongCuaKhach.soPhong.toUpperCase() : "P." + phongCuaKhach.soPhong.toUpperCase()) : "Trống"; 
+                
+                let hienThiOGhep = `<i style="color:#cbd5e0;">(Không có)</i>`; 
+                if(nt.nguoiOGhep) { 
+                    try { 
+                        let dsOghep = JSON.parse(nt.nguoiOGhep); 
+                        if(Array.isArray(dsOghep) && dsOghep.length > 0) { 
+                            hienThiOGhep = dsOghep.map(og => `• <span style="color:#2d3748; font-weight:600;">${og.ten}</span> <span style="font-size:12px; color:#718096">(${og.sdt || '-'})</span>`).join('<br>'); 
+                        } 
+                    } catch(e) {} 
+                } 
+                
+                // NÚT IN HỢP ĐỒNG PDF ĐÃ ĐƯỢC THÊM VÀO ĐÂY
+                tbody.innerHTML += `<tr>
+                    <td class="text-center">${index + 1}</td>
+                    <td><strong style="color:#2d3748">${nt.hoTen}</strong></td>
+                    <td style="color:#718096; font-size:13px;">SĐT: ${nt.soDienThoai || '-'}<br>CCCD: ${nt.cccd || '-'}</td>
+                    <td style="font-size: 13px; line-height: 1.6;">${hienThiOGhep}</td>
+                    <td class="text-center"><span class="badge-status rented">${tenPhong}</span></td>
+                    <td class="text-center">
+                        <button class="row-action-btn" title="In Hợp Đồng PDF" onclick="inHopDong(${nt.maNguoiThue})"><i class="fas fa-file-pdf" style="color:#e53e3e"></i></button>
+                        <button class="row-action-btn" title="Sửa" onclick="moPopupSuaNguoiThue(${nt.maNguoiThue})"><i class="fas fa-pen" style="color:#3182ce"></i></button>
+                        <button class="row-action-btn btn-row-delete" title="Xóa" onclick="moPopupConfirmXoa(${nt.maNguoiThue}, 'nguoithue')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`; 
+            }); 
+        }
+
+        function themDongNguoiOGhep(ten = '', sdt = '', cccd = '') { 
+            const container = document.getElementById('container-nguoi-oghep'); 
+            const idDocNhat = 'og_' + Date.now() + Math.floor(Math.random() * 100); 
+            const dongHTML = `<div class="dong-oghep" id="${idDocNhat}"><input type="text" class="og-ten" placeholder="Họ Tên" value="${ten}" style="flex: 2;"><input type="text" class="og-sdt" placeholder="SĐT" value="${sdt}" style="flex: 1.5;"><input type="text" class="og-cccd" placeholder="CCCD" value="${cccd}" style="flex: 1.5;"><button type="button" class="btn-remove-oghep" title="Xóa người này" onclick="xoaDongNguoiOGhep('${idDocNhat}')"><i class="fas fa-times"></i></button></div>`; 
+            container.insertAdjacentHTML('beforeend', dongHTML); 
+            container.scrollTop = container.scrollHeight; 
+        }
+
+        function xoaDongNguoiOGhep(idDong) { const dongCanXoa = document.getElementById(idDong); if(dongCanXoa) dongCanXoa.remove(); }
+
+        function moPopupThemNguoiThue() { cheDoNguoiThue = 'them'; document.getElementById('popup-nt-title').innerText = "Thêm Khách Mới"; document.getElementById('in-nt-ten').value = ""; document.getElementById('in-nt-sdt').value = ""; document.getElementById('in-nt-cccd').value = ""; document.getElementById('in-nt-phong-text').value = ""; document.getElementById('container-nguoi-oghep').innerHTML = ""; document.getElementById('popup-nguoi-thue').style.display = 'flex'; }
+        
+        function moPopupSuaNguoiThue(idKhach) { 
+            const nt = tatCaNguoiThue.find(x => x.maNguoiThue == idKhach); 
+            if(!nt) return; 
+            cheDoNguoiThue = 'sua'; currentIdNguoiThue_Sua = idKhach; 
+            document.getElementById('popup-nt-title').innerText = "Sửa Thông Tin: " + nt.hoTen; 
+            document.getElementById('in-nt-ten').value = nt.hoTen; document.getElementById('in-nt-sdt').value = nt.soDienThoai; document.getElementById('in-nt-cccd').value = nt.cccd; 
+            let phong = tatCaDuLieuPhong.find(p => p.maPhong == nt.maPhong); document.getElementById('in-nt-phong-text').value = phong ? (phong.soPhong.toUpperCase().startsWith("P.") ? phong.soPhong.toUpperCase() : "P." + phong.soPhong.toUpperCase()) : ''; 
+            document.getElementById('container-nguoi-oghep').innerHTML = ""; 
+            if(nt.nguoiOGhep) { try { let dsOghep = JSON.parse(nt.nguoiOGhep); if(Array.isArray(dsOghep)) dsOghep.forEach(og => themDongNguoiOGhep(og.ten, og.sdt, og.cccd)); } catch(e) {} } 
+            document.getElementById('popup-nguoi-thue').style.display = 'flex'; 
+        }
+
+        async function xuLyLuuNguoiThue() { 
+            const tenPhongNhapVao = document.getElementById('in-nt-phong-text').value.trim().toUpperCase(); 
+            let phongTimThay = tatCaDuLieuPhong.find(p => { let tp = p.soPhong.toUpperCase().startsWith("P.") ? p.soPhong.toUpperCase() : "P." + p.soPhong.toUpperCase(); return tp === tenPhongNhapVao || p.soPhong.toUpperCase() === tenPhongNhapVao; }); 
+            if(!phongTimThay) return alert("❌ Số phòng bạn gõ không tồn tại trong hệ thống!"); 
+            
+            const dsOghepHTML = document.querySelectorAll('.dong-oghep'); let mangOghep = []; 
+            dsOghepHTML.forEach(dong => { let t = dong.querySelector('.og-ten').value.trim(); let s = dong.querySelector('.og-sdt').value.trim(); let c = dong.querySelector('.og-cccd').value.trim(); if(t || s || c) mangOghep.push({ ten: t, sdt: s, cccd: c }); }); 
+            
+            const data = { hoTen: document.getElementById('in-nt-ten').value.trim(), soDienThoai: document.getElementById('in-nt-sdt').value.trim(), cccd: document.getElementById('in-nt-cccd').value.trim(), nguoiOGhep: JSON.stringify(mangOghep), maPhong: phongTimThay.maPhong }; 
+            if(!data.hoTen) return alert("Họ Tên Chủ HĐ không được để trống!"); 
+            
+            try { 
+                if(cheDoNguoiThue === 'them') await fetch(API_NGUOITHUE, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); 
+                else await fetch(`${API_NGUOITHUE}/${currentIdNguoiThue_Sua}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); 
+                dongTatCaPopup(); loadDuLieuTuSQL(); 
+            } catch(e) { alert("Lỗi lưu người thuê!"); } 
+        }
+
+        // ==========================================
+        // MODULE: HÓA ĐƠN & VẼ BẢNG
+        // ==========================================
+        function locTimKiemHoaDon() {
+            const tuKhoa = document.getElementById('searchHoaDon').value.toLowerCase();
+            const ketQua = tatCaHoaDon.filter(hd => hd.thangNam.toLowerCase().includes(tuKhoa) || hd.soPhong.toLowerCase().includes(tuKhoa));
+            veBangHoaDon(ketQua);
+        }
+
+        function veBangHoaDon(danhSach) {
+            const tbody = document.getElementById("bang-hoa-don"); tbody.innerHTML = "";
+            if(danhSach.length === 0) { tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="padding: 30px; color: #a0aec0;">Chưa có hóa đơn nào.</td></tr>`; return; }
+
+            danhSach.forEach(hd => {
+                let tenPhong = hd.soPhong.toUpperCase().startsWith("P.") ? hd.soPhong.toUpperCase() : "P." + hd.soPhong.toUpperCase();
+                let soDien = hd.soDienMoi - hd.soDienCu; let tienDien = soDien * hd.donGiaDien; 
+                let soNuoc = hd.soNuocMoi - hd.soNuocCu; let tienNuoc = soNuoc * hd.donGiaNuoc; 
+                let tongTien = hd.giaThue + tienDien + tienNuoc;
+                let badgeClass = hd.trangThai === "Đã đóng" ? "success" : "pending";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-center" style="font-size:13px;">#HD${hd.maHoaDon}</td>
+                        <td class="text-center"><strong>${tenPhong}</strong></td>
+                        <td class="text-center" style="font-weight:600; color:#4a5568;">${hd.thangNam}</td>
+                        <td class="text-center" style="border-left: 1px solid #edf2f7;">
+                            <div style="font-size: 11px; color: #a0aec0; margin-bottom: 2px;">Mới - Cũ = ${soDien} số</div>
+                            <div style="color: #dd6b20; font-weight: 700; font-size: 14px;"><i class="fas fa-bolt" style="font-size:12px;"></i> ${new Intl.NumberFormat('vi-VN').format(tienDien)}</div>
+                        </td>
+                        <td class="text-center" style="border-left: 1px solid #edf2f7; border-right: 1px solid #edf2f7;">
+                            <div style="font-size: 11px; color: #a0aec0; margin-bottom: 2px;">Mới - Cũ = ${soNuoc} khối</div>
+                            <div style="color: #3182ce; font-weight: 700; font-size: 14px;"><i class="fas fa-tint" style="font-size:12px;"></i> ${new Intl.NumberFormat('vi-VN').format(tienNuoc)}</div>
+                        </td>
+                        <td class="text-right">
+                            <div style="font-size: 11px; color: #a0aec0; margin-bottom: 2px;">Phòng: ${new Intl.NumberFormat('vi-VN').format(hd.giaThue)}</div>
+                            <div class="col-price" style="font-size: 16px; color: #e53e3e;">${formatTien(tongTien)}</div>
+                        </td>
+                        <td class="text-center"><span class="badge-status ${badgeClass}">${hd.trangThai}</span></td>
+                        <td class="text-center">
+                            <button class="row-action-btn btn-row-delete" title="Xóa HĐ" onclick="moPopupConfirmXoa(${hd.maHoaDon}, 'hoadon')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function moPopupHoaDon(idPhong, tenPhong) { 
+            currentIdPhong_HoaDon = idPhong; document.getElementById('ten-phong-hd').innerText = tenPhong; 
+            let date = new Date(); let thangNay = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getFullYear();
+            document.getElementById('hd-thang').value = thangNay; 
+            document.getElementById('hd-dien-cu').value = ""; document.getElementById('hd-dien-moi').value = ""; 
+            document.getElementById('hd-nuoc-cu').value = ""; document.getElementById('hd-nuoc-moi').value = ""; 
+            document.getElementById('popup-hoadon').style.display = 'flex'; 
+        }
+
+        async function xuLyLuuHoaDon() { 
+            const hdData = { maPhong: currentIdPhong_HoaDon, thangNam: document.getElementById('hd-thang').value, soDienCu: Number(document.getElementById('hd-dien-cu').value), soDienMoi: Number(document.getElementById('hd-dien-moi').value), soNuocCu: Number(document.getElementById('hd-nuoc-cu').value), soNuocMoi: Number(document.getElementById('hd-nuoc-moi').value) }; 
+            if(!hdData.thangNam || hdData.soDienMoi <= hdData.soDienCu || hdData.soNuocMoi <= hdData.soNuocCu) { return alert("Lỗi: Chỉ số Mới phải lớn hơn chỉ số Cũ!"); }
+            try { 
+                await fetch(API_HOADON, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(hdData) }); 
+                dongTatCaPopup(); 
+                chuyenTab('tab-hoadon', document.querySelectorAll('.menu-item')[2], 'Hóa Đơn Hàng Tháng'); 
+                loadDuLieuTuSQL(); 
+            } catch(e) { alert("Lỗi lưu hóa đơn!"); }
+        }
+
+        function xuatExcelHoaDon() {
+            if(tatCaHoaDon.length === 0) return alert("Không có dữ liệu hóa đơn để xuất!");
+            let dataToExport = [["Mã HĐ", "Phòng", "Tháng/Năm", "Số Điện", "Tiền Điện", "Số Nước", "Tiền Nước", "Tiền Phòng", "TỔNG TIỀN", "Trạng Thái"]];
+            tatCaHoaDon.forEach(hd => {
+                let soDien = hd.soDienMoi - hd.soDienCu, soNuoc = hd.soNuocMoi - hd.soNuocCu;
+                let tDien = soDien * hd.donGiaDien, tNuoc = soNuoc * hd.donGiaNuoc;
+                dataToExport.push(["#HD" + hd.maHoaDon, hd.soPhong, hd.thangNam, soDien, tDien, soNuoc, tNuoc, hd.giaThue, hd.giaThue + tDien + tNuoc, hd.trangThai]);
+            });
+            let ws = XLSX.utils.aoa_to_sheet(dataToExport);
+            ws['!cols'] = [{wch:10},{wch:10},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:20},{wch:15}];
+            let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Bang_Ke");
+            XLSX.writeFile(wb, `DoanhThu_NhaTro_${new Date().getTime()}.xlsx`);
+        }
+
+        // ==========================================
+        // MODULE: YÊU CẦU & XÓA CHUNG
+        // ==========================================
+        function veBangYeuCau(danhSach) {
+            const tbody = document.getElementById("bang-yeu-cau"); tbody.innerHTML = "";
+            if(danhSach.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="padding: 30px; color: #a0aec0;">Chưa có yêu cầu hỗ trợ nào.</td></tr>`; return; }
+            danhSach.forEach((yc, index) => {
+                let tenP = yc.soPhong.toUpperCase().startsWith("P.") ? yc.soPhong : "P." + yc.soPhong;
+                let ngayGui = new Date(yc.ngayGui).toLocaleDateString('vi-VN');
+                let badge = yc.trangThai === "Đã xong" ? `<span class="badge-status success">Đã xong</span>` : `<span class="badge-status pending">Đang chờ</span>`;
+                let nutXuLy = yc.trangThai === "Đã xong" ? `<button class="row-action-btn btn-row-delete" title="Xóa" onclick="moPopupConfirmXoa(${yc.maYeuCau}, 'yeucau')"><i class="fas fa-trash"></i></button>` : `<button class="row-action-btn" title="Đã xử lý xong" onclick="xacNhanSuaXong(${yc.maYeuCau})" style="color:#38a169; border-color:#c6f6d5; background:#f0fff4;"><i class="fas fa-check"></i> Xong</button>`;
+                tbody.innerHTML += `<tr><td class="text-center">${index + 1}</td><td class="text-center"><strong>${tenP}</strong></td><td>${yc.noiDung}</td><td class="text-center">${ngayGui}</td><td class="text-center">${badge}</td><td class="text-center">${nutXuLy}</td></tr>`;
+            });
+        }
+
+        async function xacNhanSuaXong(id) { if(confirm("Xác nhận đã sửa xong sự cố này?")) { await fetch(`${API_YEUCAU}/xuly/${id}`, { method: 'PUT' }); loadDuLieuTuSQL(); } }
+        async function xoaYeuCauMK(id) { if(confirm("Xác nhận đã cấp lại mật khẩu cho khách?")) { await fetch(`${API_QUENMK}/${id}`, { method: 'DELETE' }); loadDuLieuTuSQL(); } }
+
+        function moPopupConfirmXoa(id, loai) { currentIdXoa = id; loaiXoa = loai; document.getElementById('popup-confirm-xoa').style.display = 'flex'; }
+        
+        document.getElementById('btn-xac-nhan-xoa').onclick = async function() { 
+            try { 
+                if(loaiXoa === 'phong') await fetch(`${API_PHONG}/${currentIdXoa}`, { method: 'DELETE' }); 
+                else if(loaiXoa === 'nguoithue') await fetch(`${API_NGUOITHUE}/${currentIdXoa}`, { method: 'DELETE' }); 
+                else if(loaiXoa === 'hoadon') await fetch(`${API_HOADON}/${currentIdXoa}`, { method: 'DELETE' }); 
+                else if(loaiXoa === 'yeucau') await fetch(`${API_YEUCAU}/${currentIdXoa}`, { method: 'DELETE' }); 
+                dongTatCaPopup(); loadDuLieuTuSQL(); 
+            } catch(e) { alert("Lỗi khi xóa!"); } 
+        };
+
         function dongTatCaPopup() { document.querySelectorAll('.modal-overlay').forEach(p => p.style.display = 'none'); }
         function xuLyDangXuat() { if(confirm("Đăng xuất khỏi hệ thống?")) window.location.href = "login.html"; }
-        function moPopupConfirmXoa(id, loai) { currentIdXoa = id; loaiXoa = loai; document.getElementById('popup-confirm-xoa').style.display = 'flex'; }
-        document.getElementById('btn-xac-nhan-xoa').onclick = async function() { try { await fetch(`http://localhost:5062/api/${loaiXoa}/${currentIdXoa}`, { method: 'DELETE' }); dongTatCaPopup(); loadDuLieuTuSQL(); } catch(e) { alert("Lỗi không thể xóa dữ liệu!"); } };
 
-        // Khởi động khi mở Web
-        checkDarkMode();
         window.onload = loadDuLieuTuSQL;
     </script>
 </body>
