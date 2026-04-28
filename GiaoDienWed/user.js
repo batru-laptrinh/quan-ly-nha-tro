@@ -1,8 +1,10 @@
-const API_PHONG = "http://localhost:5062/api/phong"; 
-const API_HOADON = "http://localhost:5062/api/hoadon"; 
-const API_YEUCAU = "http://localhost:5062/api/yeucau";
-const API_CAIDAT = "http://localhost:5062/api/caidat";
-const API_NGUOITHUE = "http://localhost:5062/api/nguoithue"; 
+const API_PHONG = "https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/phong"; 
+const API_HOADON = "https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/hoadon"; 
+const API_YEUCAU = "https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/yeucau";
+const API_CAIDAT = "https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/caidat";
+const API_NGUOITHUE = "https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/nguoithue"; 
+
+const reqOpt = { headers: { 'ngrok-skip-browser-warning': 'true' } };
 
 let phongHienTai = null;
 let caiDatHeThong = null;
@@ -49,7 +51,7 @@ window.onload = async function() {
         return;
     }
     try {
-        const resP = await fetch(API_PHONG); 
+        const resP = await fetch(API_PHONG, reqOpt); 
         const dsPhong = await resP.json();
         phongHienTai = dsPhong.find(p => p.soPhong.toUpperCase() === tenPhongTuURL.toUpperCase());
         if(!phongHienTai) {
@@ -57,7 +59,7 @@ window.onload = async function() {
             return;
         }
         try {
-            const resCD = await fetch(API_CAIDAT);
+            const resCD = await fetch(API_CAIDAT, reqOpt);
             if(resCD.ok) caiDatHeThong = await resCD.json();
         } catch(e) {}
         document.getElementById('loading-screen').style.display = "none";
@@ -74,7 +76,7 @@ async function renderGiaoDienDashboard() {
     document.getElementById('info-sophong').innerText = tenP;
     document.getElementById('info-giaphong').innerText = formatTien(phongHienTai.giaThue);
     try {
-        const resNT = await fetch(API_NGUOITHUE);
+        const resNT = await fetch(API_NGUOITHUE, reqOpt);
         if(resNT.ok) {
             const dsNguoiThue = await resNT.json();
             const khachHienTai = dsNguoiThue.find(nt => nt.maPhong === phongHienTai.maPhong);
@@ -102,7 +104,7 @@ async function renderGiaoDienDashboard() {
     } catch(e) {}
 
     try {
-        const resYC = await fetch(API_YEUCAU);
+        const resYC = await fetch(API_YEUCAU, reqOpt);      
         if(resYC.ok) {
             const dsTatCaYeuCau = await resYC.json();
             const lsKhuVuc = document.getElementById('khu-vuc-lich-su');
@@ -119,7 +121,7 @@ async function renderGiaoDienDashboard() {
     } catch(e) {}
 
     try {
-        const resHD = await fetch(API_HOADON);
+        const resHD = await fetch(API_HOADON, reqOpt);
         if (resHD.ok) {
             const tatCaHoaDon = await resHD.json();
             tatCaHoaDonCuaToi = tatCaHoaDon.filter(hd => hd.maPhong === phongHienTai.maPhong);
@@ -248,7 +250,11 @@ async function guiYeuCauHoTro() {
     if(!noiDung) return;
     const data = { maPhong: phongHienTai.maPhong, noiDung: noiDung };
     try {
-        await fetch(API_YEUCAU, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        await fetch(API_YEUCAU, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' }, 
+            body: JSON.stringify(data) 
+        });
         alert("Đã gửi báo cáo cho quản lý!");
         document.getElementById('txt-yeu-cau').value = ""; 
         document.getElementById('modal-hotro').style.display = 'none';

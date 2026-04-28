@@ -12,9 +12,12 @@ function thucHienDangNhap() {
     const pass = document.getElementById('password').value;
     if(user === '' || pass === '') return alert('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!');
     
-    fetch("http://localhost:5062/api/TaiKhoan/dangnhap", {
+    fetch("https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/TaiKhoan/dangnhap", {
         method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
+        headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+        }, 
         body: JSON.stringify({ Username: user, Password: pass })
     }).then(res => res.json()).then(data => {
         if (data.success) {
@@ -47,9 +50,12 @@ async function xuLyPhucHoi() {
     if(!phong || !sdt || !email) return alert("⚠️ Vui lòng nhập đầy đủ thông tin!");
     
     try {
-        const res = await fetch("https://localhost:5062/api/quenmatkhau", { 
+        const res = await fetch("https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/quenmatkhau", { 
             method: 'POST', 
-            headers: { 'Content-Type': 'application/json' }, 
+            headers: { 
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true'
+            }, 
             body: JSON.stringify({ TenPhong: phong, SoDienThoai: sdt, Email: email }) 
         });
         if(res.ok) { 

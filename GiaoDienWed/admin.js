@@ -1,8 +1,10 @@
-const API_PHONG = "http://localhost:5062/api/phong"; 
-const API_QUENMK = "http://localhost:5062/api/quenmatkhau";
-const API_NGUOITHUE = "http://localhost:5062/api/nguoithue"; 
-const API_HOADON = "http://localhost:5062/api/hoadon"; 
-const API_YEUCAU = "http://localhost:5062/api/yeucau";
+const API_PHONG = "https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/phong"; 
+const API_QUENMK = "https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/quenmatkhau";
+const API_NGUOITHUE = "https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/nguoithue"; 
+const API_HOADON = "https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/hoadon"; 
+const API_YEUCAU = "https://ungrudged-bibliographically-jayla.ngrok-free.dev/api/yeucau";
+
+const reqOpt = { headers: { 'ngrok-skip-browser-warning': 'true' } };
 
 let cheDoHienTai = 'them', currentIdPhong_Sua = null, currentIdXoa = null, loaiXoa = null;
 let cheDoNguoiThue = 'them', currentIdNguoiThue_Sua = null, currentIdPhong_HoaDon = null;
@@ -21,9 +23,9 @@ function chuyenTab(idTabCanMo, element, titleName) {
 
 async function loadDuLieuTuSQL() {
     try {
-        const resPhong = await fetch(API_PHONG); 
+        const resPhong = await fetch(API_PHONG, reqOpt); 
         if(resPhong.ok) tatCaDuLieuPhong = await resPhong.json();
-        const resNT = await fetch(API_NGUOITHUE); 
+        const resNT = await fetch(API_NGUOITHUE, reqOpt); 
         if(resNT.ok) tatCaNguoiThue = await resNT.json();
         tatCaDuLieuPhong.forEach(p => { 
             const coKhach = tatCaNguoiThue.some(nt => nt.maPhong === p.maPhong);
@@ -41,7 +43,7 @@ async function loadDuLieuTuSQL() {
     } catch (error) {}
 
     try {
-        const resHD = await fetch(API_HOADON); 
+        const resHD = await fetch(API_HOADON, reqOpt); 
         if(resHD.ok) { 
             tatCaHoaDon = await resHD.json(); 
             veBangHoaDon(tatCaHoaDon); 
@@ -50,12 +52,12 @@ async function loadDuLieuTuSQL() {
     } catch(e) {}
 
     try {
-        const resYC = await fetch(API_YEUCAU); 
+        const resYC = await fetch(API_YEUCAU, reqOpt); 
         if(resYC.ok) { tatCaYeuCau = await resYC.json(); veBangYeuCau(tatCaYeuCau); }
     } catch(e) {}
 
     try {
-        const resMK = await fetch(API_QUENMK); 
+        const resMK = await fetch(API_QUENMK, reqOpt); 
         if(resMK.ok) {
             const dsQuenMK = await resMK.json();
             const tbodyMK = document.getElementById("bang-quen-mk"); tbodyMK.innerHTML = "";
@@ -159,8 +161,8 @@ function veBangDuLieu(danhSach) {
 async function xuLyLuuPhong() { 
     const pData = { soPhong: document.getElementById('in-so-phong').value.trim(), giaThue: Number(document.getElementById('in-gia-thue').value), trangThai: document.getElementById('in-trang-thai').value }; 
     if (!pData.soPhong || !pData.giaThue) return alert("Nhập đủ thông tin!"); 
-    if (cheDoHienTai === 'them') await fetch(API_PHONG, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pData) }); 
-    else await fetch(`${API_PHONG}/${currentIdPhong_Sua}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pData) }); 
+    if (cheDoHienTai === 'them') await fetch(API_PHONG, { method: 'POST', headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' }, body: JSON.stringify(pData) }); 
+    else await fetch(`${API_PHONG}/${currentIdPhong_Sua}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' }, body: JSON.stringify(pData) }); 
     dongTatCaPopup(); loadDuLieuTuSQL(); 
 }
 
@@ -247,8 +249,8 @@ async function xuLyLuuNguoiThue() {
     const data = { hoTen: document.getElementById('in-nt-ten').value.trim(), soDienThoai: document.getElementById('in-nt-sdt').value.trim(), cccd: document.getElementById('in-nt-cccd').value.trim(), nguoiOGhep: JSON.stringify(mangOghep), maPhong: phongTimThay.maPhong }; 
     if(!data.hoTen) return; 
     try { 
-        if(cheDoNguoiThue === 'them') await fetch(API_NGUOITHUE, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); 
-        else await fetch(`${API_NGUOITHUE}/${currentIdNguoiThue_Sua}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); 
+        if(cheDoNguoiThue === 'them') await fetch(API_NGUOITHUE, { method: 'POST', headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}, body: JSON.stringify(data) }); 
+        else await fetch(`${API_NGUOITHUE}/${currentIdNguoiThue_Sua}`, { method: 'PUT', headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}, body: JSON.stringify(data) }); 
         dongTatCaPopup(); loadDuLieuTuSQL(); 
     } catch(e) {} 
 }
@@ -285,7 +287,7 @@ async function xuLyLuuHoaDon() {
     const hdData = { maPhong: currentIdPhong_HoaDon, thangNam: document.getElementById('hd-thang').value, soDienCu: Number(document.getElementById('hd-dien-cu').value), soDienMoi: Number(document.getElementById('hd-dien-moi').value), soNuocCu: Number(document.getElementById('hd-nuoc-cu').value), soNuocMoi: Number(document.getElementById('hd-nuoc-moi').value) }; 
     if(!hdData.thangNam || hdData.soDienMoi <= hdData.soDienCu || hdData.soNuocMoi <= hdData.soNuocCu) return;
     try { 
-        await fetch(API_HOADON, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(hdData) }); 
+        await fetch(API_HOADON, { method: 'POST', headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' }, body: JSON.stringify(hdData) }); 
         dongTatCaPopup(); 
         chuyenTab('tab-hoadon', document.querySelectorAll('.menu-item')[2], 'Hóa Đơn Hàng Tháng'); 
         loadDuLieuTuSQL(); 
@@ -317,17 +319,31 @@ function veBangYeuCau(danhSach) {
     });
 }
 
-async function xacNhanSuaXong(id) { if(confirm("Xác nhận đã sửa xong?")) { await fetch(`${API_YEUCAU}/xuly/${id}`, { method: 'PUT' }); loadDuLieuTuSQL(); } }
-async function xoaYeuCauMK(id) { if(confirm("Xác nhận?")) { await fetch(`${API_QUENMK}/${id}`, { method: 'DELETE' }); loadDuLieuTuSQL(); } }
+async function xacNhanSuaXong(id) { 
+    if(confirm("Xác nhận đã sửa xong?")) { 
+        await fetch(`${API_YEUCAU}/xuly/${id}`, { method: 'PUT', headers: { 'ngrok-skip-browser-warning': 'true' } }); 
+        loadDuLieuTuSQL(); 
+    } 
+}
+async function xoaYeuCauMK(id) { 
+    if(confirm("Xác nhận?")) { 
+        await fetch(`${API_QUENMK}/${id}`, { method: 'DELETE', headers: { 'ngrok-skip-browser-warning': 'true' } }); 
+        loadDuLieuTuSQL(); 
+    } 
+}
 
-function moPopupConfirmXoa(id, loai) { currentIdXoa = id; loaiXoa = loai; document.getElementById('popup-confirm-xoa').style.display = 'flex'; }
+function moPopupConfirmXoa(id, loai) { 
+    currentIdXoa = id; loaiXoa = loai;
+    document.getElementById('popup-confirm-xoa').style.display = 'flex'; 
+}
 
 document.getElementById('btn-xac-nhan-xoa').onclick = async function() { 
+    const delOpt = { method: 'DELETE', headers: { 'ngrok-skip-browser-warning': 'true' } };
     try { 
-        if(loaiXoa === 'phong') await fetch(`${API_PHONG}/${currentIdXoa}`, { method: 'DELETE' }); 
-        else if(loaiXoa === 'nguoithue') await fetch(`${API_NGUOITHUE}/${currentIdXoa}`, { method: 'DELETE' }); 
-        else if(loaiXoa === 'hoadon') await fetch(`${API_HOADON}/${currentIdXoa}`, { method: 'DELETE' }); 
-        else if(loaiXoa === 'yeucau') await fetch(`${API_YEUCAU}/${currentIdXoa}`, { method: 'DELETE' }); 
+        if(loaiXoa === 'phong') await fetch(`${API_PHONG}/${currentIdXoa}`, delOpt); 
+        else if(loaiXoa === 'nguoithue') await fetch(`${API_NGUOITHUE}/${currentIdXoa}`, delOpt); 
+        else if(loaiXoa === 'hoadon') await fetch(`${API_HOADON}/${currentIdXoa}`, delOpt); 
+        else if(loaiXoa === 'yeucau') await fetch(`${API_YEUCAU}/${currentIdXoa}`, delOpt); 
         dongTatCaPopup(); loadDuLieuTuSQL(); 
     } catch(e) {} 
 };
